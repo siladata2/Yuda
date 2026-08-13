@@ -38,7 +38,7 @@ if (!sessionId || sessionId.trim() === '') {
 }
 
 if (!fs.existsSync(path.join(sessionsDir, 'creds.json'))) {
-  const sessdata = sessionId.replace("sila~", '').trim()
+  const sessdata = sessionId.replace("SILA-MD~", '').trim()
   try {
     const compressedBuffer = Buffer.from(sessdata, 'base64')
     const zlib = require('zlib')
