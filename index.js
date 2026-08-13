@@ -7,13 +7,11 @@ let config
 try {
   config = require('./config')
 } catch (e) {
-  // If config.js doesn't exist, use environment variables directly
   config = {
     SESSION_ID: process.env.SESSION_ID || '',
-    ALLOW_GROUPS: process.env.ALLOW_GROUPS === 'true' || false,
+    ALLOW_GROUPS: true,
     BOT_PREFIX: process.env.BOT_PREFIX || '!',
-    AUTO_REPLY: process.env.AUTO_REPLY !== 'false',
-    DEFAULT_REPLY: process.env.DEFAULT_REPLY || 'Hello! I am Sila Tech Bot. How can I help you?',
+    AUTO_REPLY: false,
     IMPORT_EXPORT: true,
     EXPORT_CHANNEL: 'status@broadcast',
     LOG_MESSAGES: true,
@@ -27,7 +25,6 @@ if (!fs.existsSync(sessionsDir)) {
   fs.mkdirSync(sessionsDir, { recursive: true })
 }
 
-// Check for SESSION_ID in environment variables
 const sessionId = process.env.SESSION_ID || config.SESSION_ID || ''
 
 if (!sessionId || sessionId.trim() === '') {
@@ -38,7 +35,7 @@ if (!sessionId || sessionId.trim() === '') {
 }
 
 if (!fs.existsSync(path.join(sessionsDir, 'creds.json'))) {
-  const sessdata = sessionId.replace("SILA-MD~", '').trim()
+  const sessdata = sessionId.replace("sila~", '').trim()
   try {
     const compressedBuffer = Buffer.from(sessdata, 'base64')
     const zlib = require('zlib')
@@ -47,7 +44,6 @@ if (!fs.existsSync(path.join(sessionsDir, 'creds.json'))) {
     console.log("✅ Session extracted and saved successfully")
   } catch (err) {
     console.log('❌ Failed to extract session:', err.message)
-    console.log('💡 Make sure your SESSION_ID is valid and in format: sila~[base64]')
     process.exit(1)
   }
 }
@@ -67,9 +63,13 @@ try {
   console.log('⚠️ botHandler.js not found, creating default handler')
   botHandler = {
     processMessage: async (conn, msg, sender, content, messageType) => {
-      await conn.sendMessage(sender, { 
-        text: 'Hello! I am Sila Tech Bot. Your message was received.' 
-      })
+      // Only respond to commands
+      if (content.startsWith(config.BOT_PREFIX)) {
+        await conn.sendMessage(sender, { 
+          text: 'Hello! I am Sila Tech Bot. Use !help for commands.' 
+        })
+      }
+      // No auto-reply for non-commands
     }
   }
 }
@@ -93,7 +93,6 @@ async function startBot() {
       
       if (qr) {
         console.log('❌ QR Code detected! Please use SESSION_ID instead.')
-        console.log('💡 Generate a session using: https://replit.com/@your-session-generator')
       }
       
       if (connection === 'open') {
@@ -129,11 +128,15 @@ async function startBot() {
         const messageType = Object.keys(msg.message)[0]
         const messageContent = msg.message.conversation || msg.message.extendedTextMessage?.text || msg.message.imageMessage?.caption || ''
         
+        // Allow group messages
         if (sender.endsWith('@g.us') && !config.ALLOW_GROUPS) return
-        if (msg.key.fromMe) return
+        
+        // REMOVED: Don't ignore own messages (msg.key.fromMe)
+        // Now bot will respond to commands from anyone including itself
         
         console.log(`📩 Message from ${sender}: ${messageContent.substring(0, 50)}`)
         
+        // Process ALL messages including fromMe
         if (botHandler && typeof botHandler.processMessage === 'function') {
           await botHandler.processMessage(conn, msg, sender, messageContent, messageType)
         }
@@ -155,34 +158,20 @@ async function startBot() {
               h1 { font-size: 2.5em; margin-bottom: 10px; }
               .status { background: #4CAF50; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 1.2em; }
               .info { background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0; }
-              .info p { margin: 10px 0; }
-              .commands { text-align: left; padding: 20px; }
-              .commands li { margin: 10px 0; list-style: none; }
               .footer { margin-top: 30px; font-size: 0.9em; opacity: 0.8; }
-              .emoji { font-size: 1.2em; }
             </style>
           </head>
           <body>
             <div class="container">
               <h1>🤖 Sila Tech Bot</h1>
-              <div class="status">✅ Bot is Online & Connected</div>
+              <div class="status">✅ Bot is Online</div>
               <div class="info">
                 <p>📱 WhatsApp Bot Active</p>
                 <p>📊 Status: Running</p>
                 <p>🌐 Port: ${port}</p>
               </div>
-              <div class="commands">
-                <h3>🚀 Available Commands</h3>
-                <ul>
-                  <li>📥 <strong>!import [text]</strong> - Import text message</li>
-                  <li>📤 <strong>!export</strong> - Export messages</li>
-                  <li>📊 <strong>!stats</strong> - View statistics</li>
-                  <li>ℹ️ <strong>!help</strong> - Show help menu</li>
-                </ul>
-              </div>
               <div class="footer">
                 <p>Made with ❤️ by Sila Tech</p>
-                <p>Version 1.0.0</p>
               </div>
             </div>
           </body>
