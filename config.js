@@ -5,7 +5,7 @@ module.exports = {
   
   // Bot settings
   ALLOW_GROUPS: false, // Set to true to allow group messages
-  BOT_PREFIX: '!', // Command prefix
+  BOT_PREFIX: '.', // Command prefix
   
   // Auto reply settings
   AUTO_REPLY: true,
