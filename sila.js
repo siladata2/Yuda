@@ -602,7 +602,7 @@ async function handleMessage(msg) {
     if (!text) return;
     
     // Check prefix
-    const prefix = config.PREFIX || '!';
+    const prefix = config.PREFIX || '.';
     if (!text.startsWith(prefix)) return;
     
     const args = text.slice(prefix.length).trim().split(/\s+/);
