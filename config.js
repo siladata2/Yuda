@@ -4,12 +4,11 @@ module.exports = {
   SESSION_ID: process.env.SESSION_ID || '',
   
   // Bot settings
-  ALLOW_GROUPS: process.env.ALLOW_GROUPS === 'true' || false,
-  BOT_PREFIX: process.env.BOT_PREFIX || '.',
+  ALLOW_GROUPS: process.env.ALLOW_GROUPS === 'true' || true, // Allow groups by default
+  BOT_PREFIX: process.env.BOT_PREFIX || '!',
   
-  // Auto reply settings
-  AUTO_REPLY: process.env.AUTO_REPLY !== 'false',
-  DEFAULT_REPLY: process.env.DEFAULT_REPLY || 'Hello! I am Sila Tech Bot. How can I help you?',
+  // Auto reply settings - DISABLED
+  AUTO_REPLY: false, // Changed to false
   
   // Import/Export settings
   IMPORT_EXPORT: true,
