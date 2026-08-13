@@ -30,34 +30,43 @@ async function processMessage(conn, msg, sender, content, messageType) {
       logMessage(sender, content, messageType)
     }
 
+    // Check if message starts with bot prefix
+    if (!content.startsWith(config.BOT_PREFIX)) {
+      // NO AUTO-REPLY - Just return
+      return
+    }
+
+    // Handle commands (works for everyone including bot itself)
+    const command = content.slice(config.BOT_PREFIX.length).trim().toLowerCase()
+
     // Handle import command
-    if (content.startsWith(`${config.BOT_PREFIX}import`)) {
-      await handleImport(conn, msg, sender, content)
+    if (command.startsWith('import')) {
+      await handleImport(conn, msg, sender, command)
       return
     }
 
     // Handle export command
-    if (content.startsWith(`${config.BOT_PREFIX}export`)) {
-      await handleExport(conn, msg, sender, content)
+    if (command.startsWith('export')) {
+      await handleExport(conn, msg, sender, command)
       return
     }
 
     // Handle stats command
-    if (content.startsWith(`${config.BOT_PREFIX}stats`)) {
+    if (command === 'stats') {
       await handleStats(conn, msg, sender)
       return
     }
 
     // Handle help command
-    if (content === `${config.BOT_PREFIX}help` || content === `${config.BOT_PREFIX}menu`) {
+    if (command === 'help' || command === 'menu') {
       await handleHelp(conn, msg, sender)
       return
     }
 
-    // Auto reply if enabled
-    if (config.AUTO_REPLY && !content.startsWith(config.BOT_PREFIX)) {
+    // Unknown command
+    if (command.length > 0) {
       await conn.sendMessage(sender, { 
-        text: config.DEFAULT_REPLY 
+        text: `❌ Unknown command: ${command}\n\nType !help for available commands` 
       })
     }
 
@@ -69,9 +78,9 @@ async function processMessage(conn, msg, sender, content, messageType) {
   }
 }
 
-async function handleImport(conn, msg, sender, content) {
+async function handleImport(conn, msg, sender, command) {
   try {
-    const args = content.split(' ')
+    const args = command.split(' ')
     if (args.length < 2) {
       await conn.sendMessage(sender, { 
         text: '📥 *Import Usage:*\n!import [text/data]\nExample: !import Hello, this is an imported message' 
@@ -105,9 +114,9 @@ async function handleImport(conn, msg, sender, content) {
   }
 }
 
-async function handleExport(conn, msg, sender, content) {
+async function handleExport(conn, msg, sender, command) {
   try {
-    const args = content.split(' ')
+    const args = command.split(' ')
     const exportAll = args.includes('--all')
     
     let exportData = {}
@@ -193,13 +202,14 @@ async function handleHelp(conn, msg, sender) {
 !help or !menu - Show this menu
 
 ✨ *Features:*
-• Auto-reply for all messages
-• Message logging
-• Import/Export system
+• Message import/export system
 • Message statistics
+• No auto-reply (command only)
 
-📌 *Example:*
-!import Hello, this is a test message`
+📌 *Examples:*
+!import Hello, this is a test
+!stats
+!export`
 
   await conn.sendMessage(sender, { text: helpText })
 }
