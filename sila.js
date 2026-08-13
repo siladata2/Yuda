@@ -78,7 +78,7 @@ import {
   DisconnectReason,
   makeCacheableSignalKeyStore,
   Browsers
-} from '@whiskeysockets/baileys';
+} from '@itsliaaa/baileys';
 import Pino from 'pino';
 import { Boom } from '@hapi/boom';
 
