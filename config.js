@@ -1,19 +1,19 @@
 // config.js
 module.exports = {
-  // Add your session ID here
-  SESSION_ID: '', // Format: sila~[base64 compressed session]
+  // Read SESSION_ID from environment variable (Heroku) or from config
+  SESSION_ID: process.env.SESSION_ID || '',
   
   // Bot settings
-  ALLOW_GROUPS: false, // Set to true to allow group messages
-  BOT_PREFIX: '.', // Command prefix
+  ALLOW_GROUPS: process.env.ALLOW_GROUPS === 'true' || false,
+  BOT_PREFIX: process.env.BOT_PREFIX || '!',
   
   // Auto reply settings
-  AUTO_REPLY: true,
-  DEFAULT_REPLY: 'Hello! I am Sila Tech Bot. How can I help you?',
+  AUTO_REPLY: process.env.AUTO_REPLY !== 'false',
+  DEFAULT_REPLY: process.env.DEFAULT_REPLY || 'Hello! I am Sila Tech Bot. How can I help you?',
   
   // Import/Export settings
   IMPORT_EXPORT: true,
-  EXPORT_CHANNEL: 'status@broadcast', // Channel to send exported data
+  EXPORT_CHANNEL: 'status@broadcast',
   
   // Message logging
   LOG_MESSAGES: true,
