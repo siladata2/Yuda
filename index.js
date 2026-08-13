@@ -1,29 +1,53 @@
 // index.js
 const fs = require('fs')
 const path = require('path')
-const config = require('./config')
+
+// Load config
+let config
+try {
+  config = require('./config')
+} catch (e) {
+  // If config.js doesn't exist, use environment variables directly
+  config = {
+    SESSION_ID: process.env.SESSION_ID || '',
+    ALLOW_GROUPS: process.env.ALLOW_GROUPS === 'true' || false,
+    BOT_PREFIX: process.env.BOT_PREFIX || '!',
+    AUTO_REPLY: process.env.AUTO_REPLY !== 'false',
+    DEFAULT_REPLY: process.env.DEFAULT_REPLY || 'Hello! I am Sila Tech Bot. How can I help you?',
+    IMPORT_EXPORT: true,
+    EXPORT_CHANNEL: 'status@broadcast',
+    LOG_MESSAGES: true,
+    LOG_FILE: 'message_logs.json'
+  }
+}
 
 //===================SESSION-AUTH============================
-if (!fs.existsSync(path.join(__dirname, 'sessions/creds.json'))) {
-  if (!config.SESSION_ID || config.SESSION_ID.trim() === '') {
-    console.log('❌ Please add your session to SESSION_ID in config.env or config.js')
-    process.exit(1)
-  }
-  const sessdata = config.SESSION_ID.replace("SILA-MD~", '').trim()
+const sessionsDir = path.join(__dirname, 'sessions')
+if (!fs.existsSync(sessionsDir)) {
+  fs.mkdirSync(sessionsDir, { recursive: true })
+}
+
+// Check for SESSION_ID in environment variables
+const sessionId = process.env.SESSION_ID || config.SESSION_ID || ''
+
+if (!sessionId || sessionId.trim() === '') {
+  console.log('❌ Please add your session to SESSION_ID in Heroku Config Vars')
+  console.log('📝 Go to: Heroku Dashboard > Your App > Settings > Config Vars')
+  console.log('🔑 Add variable: SESSION_ID = sila~[your_compressed_session]')
+  process.exit(1)
+}
+
+if (!fs.existsSync(path.join(sessionsDir, 'creds.json'))) {
+  const sessdata = sessionId.replace("sila~", '').trim()
   try {
     const compressedBuffer = Buffer.from(sessdata, 'base64')
     const zlib = require('zlib')
     const sessionBuffer = zlib.gunzipSync(compressedBuffer)
-    
-    // Create sessions directory if it doesn't exist
-    if (!fs.existsSync(path.join(__dirname, 'sessions'))) {
-      fs.mkdirSync(path.join(__dirname, 'sessions'))
-    }
-    
-    fs.writeFileSync(path.join(__dirname, 'sessions/creds.json'), sessionBuffer)
+    fs.writeFileSync(path.join(sessionsDir, 'creds.json'), sessionBuffer)
     console.log("✅ Session extracted and saved successfully")
   } catch (err) {
     console.log('❌ Failed to extract session:', err.message)
+    console.log('💡 Make sure your SESSION_ID is valid and in format: sila~[base64]')
     process.exit(1)
   }
 }
@@ -34,15 +58,27 @@ const port = process.env.PORT || 9090
 
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@itsliaaa/baileys')
 const Pino = require('pino')
-const qrcode = require('qrcode-terminal')
 
 // Import bot handlers
-const botHandler = require('./botHandler')
+let botHandler
+try {
+  botHandler = require('./botHandler')
+} catch (e) {
+  console.log('⚠️ botHandler.js not found, creating default handler')
+  botHandler = {
+    processMessage: async (conn, msg, sender, content, messageType) => {
+      await conn.sendMessage(sender, { 
+        text: 'Hello! I am Sila Tech Bot. Your message was received.' 
+      })
+    }
+  }
+}
 
 let conn
 
 async function startBot() {
   try {
+    console.log('🚀 Starting WhatsApp bot...')
     const { state, saveCreds } = await useMultiFileAuthState('sessions')
     
     conn = makeWASocket({
@@ -57,21 +93,21 @@ async function startBot() {
       
       if (qr) {
         console.log('❌ QR Code detected! Please use SESSION_ID instead.')
-        console.log('Scanning QR is disabled. Use SESSION_ID from your previous session.')
+        console.log('💡 Generate a session using: https://replit.com/@your-session-generator')
       }
       
       if (connection === 'open') {
         console.log('✅ WhatsApp bot connected successfully!')
         console.log(`📱 Bot running on port ${port}`)
+        console.log('🌐 Web dashboard: https://your-app-name.herokuapp.com')
       }
       
       if (connection === 'close') {
         const reason = lastDisconnect?.error?.output?.statusCode
         if (reason === DisconnectReason.loggedOut || reason === DisconnectReason.badSession) {
           console.log('❌ Session expired! Please update SESSION_ID')
-          // Delete invalid session
-          if (fs.existsSync(path.join(__dirname, 'sessions/creds.json'))) {
-            fs.unlinkSync(path.join(__dirname, 'sessions/creds.json'))
+          if (fs.existsSync(path.join(sessionsDir, 'creds.json'))) {
+            fs.unlinkSync(path.join(sessionsDir, 'creds.json'))
           }
           process.exit(1)
         } else {
@@ -85,23 +121,25 @@ async function startBot() {
 
     // Handle incoming messages
     conn.ev.on('messages.upsert', async (m) => {
-      const msg = m.messages[0]
-      if (!msg.message) return
-      
-      const sender = msg.key.remoteJid
-      const messageType = Object.keys(msg.message)[0]
-      const messageContent = msg.message.conversation || msg.message.extendedTextMessage?.text || msg.message.imageMessage?.caption || ''
-      
-      // Ignore group messages if not configured
-      if (sender.endsWith('@g.us') && !config.ALLOW_GROUPS) return
-      
-      // Ignore own messages
-      if (msg.key.fromMe) return
-      
-      console.log(`📩 Message from ${sender}: ${messageContent}`)
-      
-      // Process message
-      await botHandler.processMessage(conn, msg, sender, messageContent, messageType)
+      try {
+        const msg = m.messages[0]
+        if (!msg.message) return
+        
+        const sender = msg.key.remoteJid
+        const messageType = Object.keys(msg.message)[0]
+        const messageContent = msg.message.conversation || msg.message.extendedTextMessage?.text || msg.message.imageMessage?.caption || ''
+        
+        if (sender.endsWith('@g.us') && !config.ALLOW_GROUPS) return
+        if (msg.key.fromMe) return
+        
+        console.log(`📩 Message from ${sender}: ${messageContent.substring(0, 50)}`)
+        
+        if (botHandler && typeof botHandler.processMessage === 'function') {
+          await botHandler.processMessage(conn, msg, sender, messageContent, messageType)
+        }
+      } catch (error) {
+        console.error('❌ Error processing message:', error)
+      }
     })
 
     // Express server
@@ -112,32 +150,34 @@ async function startBot() {
           <head>
             <title>Sila Tech WhatsApp Bot</title>
             <style>
-              body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+              body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; margin: 0; }
               .container { max-width: 600px; margin: 0 auto; background: rgba(255,255,255,0.1); padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
               h1 { font-size: 2.5em; margin-bottom: 10px; }
-              .status { background: #4CAF50; padding: 10px; border-radius: 10px; margin: 20px 0; }
-              .info { background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; margin: 20px 0; }
-              .features { text-align: left; padding: 20px; }
-              .features li { margin: 10px 0; }
+              .status { background: #4CAF50; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 1.2em; }
+              .info { background: rgba(255,255,255,0.2); padding: 20px; border-radius: 10px; margin: 20px 0; }
+              .info p { margin: 10px 0; }
+              .commands { text-align: left; padding: 20px; }
+              .commands li { margin: 10px 0; list-style: none; }
               .footer { margin-top: 30px; font-size: 0.9em; opacity: 0.8; }
+              .emoji { font-size: 1.2em; }
             </style>
           </head>
           <body>
             <div class="container">
               <h1>🤖 Sila Tech Bot</h1>
-              <div class="status">✅ Bot is Online</div>
+              <div class="status">✅ Bot is Online & Connected</div>
               <div class="info">
-                <p>📱 Connected to WhatsApp</p>
-                <p>📊 Bot Status: Active</p>
+                <p>📱 WhatsApp Bot Active</p>
+                <p>📊 Status: Running</p>
+                <p>🌐 Port: ${port}</p>
               </div>
-              <div class="features">
-                <h3>🚀 Features</h3>
+              <div class="commands">
+                <h3>🚀 Available Commands</h3>
                 <ul>
-                  <li>📥 Import/Export Messages</li>
-                  <li>📊 Message Statistics</li>
-                  <li>💬 Auto Reply System</li>
-                  <li>📝 Custom Commands</li>
-                  <li>🔒 Session Management</li>
+                  <li>📥 <strong>!import [text]</strong> - Import text message</li>
+                  <li>📤 <strong>!export</strong> - Export messages</li>
+                  <li>📊 <strong>!stats</strong> - View statistics</li>
+                  <li>ℹ️ <strong>!help</strong> - Show help menu</li>
                 </ul>
               </div>
               <div class="footer">
