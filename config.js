@@ -9,7 +9,7 @@ export const config = {
   // Bot Info
   BOT_NAME: process.env.BOT_NAME || 'SILA TECH BOT',
   VERSION: '1.0.0',
-  PREFIX: process.env.PREFIX || '!',
+  PREFIX: process.env.PREFIX || '.',
   
   // Owner
   OWNER_NUMBER: process.env.OWNER_NUMBER || '',
