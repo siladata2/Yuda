@@ -1,0 +1,21 @@
+// app.json
+{
+  "name": "sila-tech-bot",
+  "description": "WhatsApp Bot ya Sila Tech inayotumia @itsliaaa/baileys",
+  "repository": "https://github.com/yourusername/sila-tech-bot",
+  "logo": "https://i.imgur.com/your-logo.png",
+  "keywords": ["whatsapp", "bot", "baileys", "sila-tech", "nodejs"],
+  "env": {
+    "SESSION_ID": {
+      "description": "Your WhatsApp session ID (format: sila~[base64 compressed session])",
+      "required": true,
+      "value": ""
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "stack": "heroku-24"
+}
