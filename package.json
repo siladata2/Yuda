@@ -2,10 +2,10 @@
   "name": "sila-tech-bot",
   "version": "1.0.0",
   "description": "WhatsApp Bot ya Sila Tech inayotumia @itsliaaa/baileys",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "heroku-postbuild": "echo 'Build completed'"
+    "start": "node index.js"
   },
   "keywords": [
     "whatsapp-bot",
@@ -16,11 +16,10 @@
   "license": "ISC",
   "dependencies": {
     "@itsliaaa/baileys": "github:itsliaaa/baileys",
-    "express": "^4.18.2",
-    "node-cache": "^5.1.2",
-    "pino": "^9.0.0",
-    "qrcode-terminal": "^0.12.0",
-    "ws": "^8.18.0"
+    "@hapi/boom": "^10.0.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "pino": "^9.4.0"
   },
   "engines": {
     "node": ">=18.0.0"
