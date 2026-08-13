@@ -1,0 +1,25 @@
+// package.json
+{
+  "name": "sila-tech-bot",
+  "version": "1.0.0",
+  "description": "WhatsApp Bot ya Sila Tech inayotumia @itsliaaa/baileys",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "whatsapp-bot",
+    "baileys",
+    "sila-tech"
+  ],
+  "author": "Sila Tech",
+  "license": "ISC",
+  "dependencies": {
+    "@itsliaaa/baileys": "github:itsliaaa/baileys",
+    "pino": "^9.0.0",
+    "qrcode-terminal": "^0.12.0",
+    "node-cache": "^5.1.2",
+    "ws": "^8.18.0",
+    "express": "^4.18.2"
+  }
+}
