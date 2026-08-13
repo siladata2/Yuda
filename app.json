@@ -1,12 +1,12 @@
 {
-  "name": "sila-tech-bot",
-  "description": "WhatsApp Bot ya Sila Tech inayotumia @itsliaaa/baileys",
-  "repository": "https://github.com/yourusername/sila-tech-bot",
-  "logo": "https://i.imgur.com/your-logo.png",
-  "keywords": ["whatsapp", "bot", "baileys", "sila-tech", "nodejs"],
+  "name": "Sila MD",
+  "description": "SILA MD - WhatsApp Bot with Session Authentication",
+  "logo": "https://i.ibb.co/tTgTQqQt/your-image.jpg",
+  "keywords": ["whatsapp", "bot", "sila", "md"],
+  "repository": "https://github.com/yourusername/vampire-md",
   "env": {
     "SESSION_ID": {
-      "description": "Your WhatsApp session ID (format: sila~[base64 compressed session])",
+      "description": "Your WhatsApp session ID (base64 encoded and gzipped creds.json)",
       "required": true,
       "value": ""
     }
