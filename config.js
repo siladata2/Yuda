@@ -5,7 +5,7 @@ module.exports = {
   
   // Bot settings
   ALLOW_GROUPS: process.env.ALLOW_GROUPS === 'true' || true, // Allow groups by default
-  BOT_PREFIX: process.env.BOT_PREFIX || '!',
+  BOT_PREFIX: process.env.BOT_PREFIX || '.', '/',
   
   // Auto reply settings - DISABLED
   AUTO_REPLY: false, // Changed to false
