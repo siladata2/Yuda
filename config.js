@@ -1,20 +1,40 @@
 // config.js
-module.exports = {
-  // Read SESSION_ID from environment variable (Heroku) or from config
+import dotenv from 'dotenv';
+dotenv.config();
+
+export const config = {
+  // Session
   SESSION_ID: process.env.SESSION_ID || '',
   
-  // Bot settings
-  ALLOW_GROUPS: process.env.ALLOW_GROUPS === 'true' || true, // Allow groups by default
-  BOT_PREFIX: process.env.BOT_PREFIX || '.',
+  // Bot Info
+  BOT_NAME: process.env.BOT_NAME || 'SILA TECH BOT',
+  VERSION: '1.0.0',
+  PREFIX: process.env.PREFIX || '!',
   
-  // Auto reply settings - DISABLED
-  AUTO_REPLY: false, // Changed to false
+  // Owner
+  OWNER_NUMBER: process.env.OWNER_NUMBER || '',
   
-  // Import/Export settings
-  IMPORT_EXPORT: true,
-  EXPORT_CHANNEL: 'status@broadcast',
+  // Settings
+  ALLOW_GROUPS: process.env.ALLOW_GROUPS === 'true' || true,
+  AUTO_REPLY: false,
   
-  // Message logging
-  LOG_MESSAGES: true,
-  LOG_FILE: 'message_logs.json'
-}
+  // Anti Systems (enable/disable)
+  ANTILINK: true,
+  ANTIBADWORD: true,
+  ANTIBOT: true,
+  ANTIBUG: true,
+  ANTIBUN: true,
+  ANTIFAKE: true,
+  ANTIFORWARD: true,
+  ANTIGROUPLINK: true,
+  ANTIMEDIA: true,
+  ANTIMENTION: true,
+  ANTISPAM: true,
+  ANTISTATUS: true,
+  ANTITAG: true,
+  CHATBOT: true,
+  
+  // Paths
+  SESSION_DIR: './sessions',
+  COMMANDS_DIR: './silatech'
+};
