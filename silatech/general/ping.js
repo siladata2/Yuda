@@ -1,7 +1,7 @@
 // silatech/general/ping.js
 export default {
-  name: 'ping',
-  alias: ['pong', 'speed'],
+  name: 'ping2',
+  alias: ['pong2', 'speed2'],
   description: 'Check bot latency with rich style',
   category: 'general',
   ownerOnly: false,
