@@ -13,17 +13,23 @@ export default {
     const seconds = uptimeSeconds % 60;
     const uptimeStr = `${hours}h ${minutes}m ${seconds}s`;
 
+    const imageUrl = 'https://i.ibb.co/674988wP/silatech.jpg';
+
+    const aliveText = `🤖 *SILA TECH BOT IS ALIVE!*
+
+🟢 *System Status:* \`Online & Running\`
+⏱️ *Uptime:* \`${uptimeStr}\`
+👨‍💻 *Developer:* \`Sila Tech\`
+🌐 *Website:* \`silatech.site\`
+
+Type *${prefix}menu* to see all available commands.`;
+
     await sock.sendMessage(msg.key.remoteJid, {
       disclaimerText: 'SILA TECH BOT SYSTEM',
       richResponse: [
         {
-          text: '🤖 *SILA TECH BOT IS ALIVE!*'
-        },
-        {
-          text: `🟢 *System Status:* \`Online & Running\`\n⏱️ *Uptime:* \`${uptimeStr}\`\n👨‍💻 *Developer:* \`Sila Tech\`\n🌐 *Website:* \`silatech.site\``
-        },
-        {
-          text: `Type *${prefix}menu* to see all available commands.`
+          image: { url: imageUrl },
+          caption: aliveText
         }
       ]
     }, { quoted: msg });
