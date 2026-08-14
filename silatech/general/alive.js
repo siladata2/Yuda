@@ -13,41 +13,19 @@ export default {
     const seconds = uptimeSeconds % 60;
     const uptimeStr = `${hours}h ${minutes}m ${seconds}s`;
 
-    const imageUrl = 'https://i.ibb.co/674988wP/silatech.jpg';
-
-    const aliveText = `🤖 *SILA TECH BOT IS ALIVE!*
-
-🟢 *System Status:* \`Online & Running\`
-⏱️ *Uptime:* \`${uptimeStr}\`
-👨‍💻 *Developer:* \`Sila Tech\`
-🌐 *API:* \`api.silatech.site\`
-
-Type *${prefix}menu* to see all available commands.`;
-
-    // 1. Tuma ujumbe wa kwanza wa kuangalia status
     await sock.sendMessage(msg.key.remoteJid, {
       disclaimerText: 'SILA TECH BOT SYSTEM',
       richResponse: [
         {
-          text: '⚡ *Checking System Status...*'
+          text: '🤖 *SILA TECH BOT IS ALIVE!*'
+        },
+        {
+          text: `🟢 *System Status:* \`Online & Running\`\n⏱️ *Uptime:* \`${uptimeStr}\`\n👨‍💻 *Developer:* \`Sila Tech\`\n🌐 *Website:* \`silatech.site\``
+        },
+        {
+          text: `Type *${prefix}menu* to see all available commands.`
         }
       ]
-    }, { quoted: msg });
-
-    // 2. Tuma taarifa kamili za Alive
-    await sock.sendMessage(msg.key.remoteJid, {
-      image: { url: imageUrl },
-      caption: aliveText,
-      contextInfo: {
-        externalAdReply: {
-          title: "SILA TECH OFFICIAL BOT",
-          body: "System Active",
-          mediaType: 1,
-          renderLargerThumbnail: true,
-          thumbnailUrl: imageUrl,
-          sourceUrl: "https://api.silatech.site"
-        }
-      }
     }, { quoted: msg });
   }
 };
