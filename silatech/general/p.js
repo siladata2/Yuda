@@ -2,7 +2,7 @@
 export default {
   name: 'ping2',
   alias: ['pong', 'speed'],
-  description: 'Check bot latency with rich response structure',
+  description: 'Check bot latency with rich style',
   category: 'general',
   ownerOnly: false,
 
@@ -18,44 +18,18 @@ export default {
 
     const latency = Date.now() - start;
 
+    const pingText = `🏓 *PONG!*
+
+⚡ *Speed:* \`${latency}ms\`
+⏱️ *Uptime:* \`${uptimeStr}\`
+📊 *Status:* \`Active & Connected\`
+🤖 *Bot:* \`SILA TECH BOT\``;
+
     await sock.sendMessage(msg.key.remoteJid, {
       disclaimerText: 'SILA TECH BOT SYSTEM',
       richResponse: [
         {
-          text: '🏓 *PONG!* Status na Taarifa za Bot:'
-        },
-        {
-          title: 'System Performance',
-          table: [
-            {
-              isHeading: true,
-              items: ['Metric', 'Value']
-            },
-            {
-              isHeading: false,
-              items: ['Latency', `${latency}ms`]
-            },
-            {
-              isHeading: false,
-              items: ['Uptime', uptimeStr]
-            },
-            {
-              isHeading: false,
-              items: ['Status', 'Active & Connected']
-            }
-          ]
-        },
-        {
-          language: 'bash',
-          code: [
-            {
-              highlightType: 0,
-              codeContent: `ping_ms=${latency}\nstatus="ONLINE"`
-            }
-          ]
-        },
-        {
-          text: '🤖 Powered by *SILA TECH*'
+          text: pingText
         }
       ]
     }, { quoted: msg });
