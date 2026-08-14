@@ -1,41 +1,29 @@
 // silatech/general/ping.js
 export default {
   name: 'ping2',
-  alias: ['pong', 'speed'],
-  description: 'Check bot latency with rich style',
+  alias: ['pong'],
+  description: 'Check bot latency with location rich format',
   category: 'general',
   ownerOnly: false,
 
   async execute(sock, msg, args, prefix, options) {
     const start = Date.now();
-
-    // Kuhesabu uptime
-    const uptimeSeconds = Math.floor(process.uptime());
-    const hours = Math.floor(uptimeSeconds / 3600);
-    const minutes = Math.floor((uptimeSeconds % 3600) / 60);
-    const seconds = uptimeSeconds % 60;
-    const uptimeStr = `${hours}h ${minutes}m ${seconds}s`;
-
     const latency = Date.now() - start;
 
-    const pingText = `🏓 *PONG!*
-
-⚡ *Speed:* \`${latency}ms\`
-⏱️ *Uptime:* \`${uptimeStr}\`
-📊 *Status:* \`Active & Connected\`
-🤖 *Bot:* \`SILA TECH BOT\``;
-
     await sock.sendMessage(msg.key.remoteJid, {
-      text: pingText,
+      location: { 
+        degreesLatitude: 0, 
+        degreesLongitude: 0,
+        name: `⚡ SILA TECH LATENCY: ${latency}ms`
+      },
+      caption: `🏓 *PONG!*\n\n⏱️ *Latency:* \`${latency}ms\`\n📊 *Status:* \`Online\`\n🕒 *Uptime:* \`${Math.floor(process.uptime())}s\``,
       contextInfo: {
-        externalAdReply: {
-          title: "SILA TECH BOT SYSTEM",
-          body: `Response Time: ${latency}ms`,
-          mediaType: 1,
-          previewType: 0,
-          renderLargerThumbnail: true, // Weka false kama wataka thumbnail iwe ndogo
-          thumbnailUrl: "https://files.catbox.moe/83m31m.jpg", // Weka URL ya picha au logo yako
-          sourceUrl: "https://api.silatech.site" // Link yako
+        forwardingScore: 999,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+          newsletterJid: '120363000000000000@newsletter', // JID ya channel yako kama unayo
+          newsletterName: 'SILA TECH UPDATES',
+          serverMessageId: -1
         }
       }
     }, { quoted: msg });
