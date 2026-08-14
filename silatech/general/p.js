@@ -2,19 +2,19 @@
 export default {
   name: 'ping2',
   alias: ['pong', 'speed'],
-  description: 'Check bot latency with rich style and edit',
+  description: 'Check bot latency with rich style',
   category: 'general',
   ownerOnly: false,
 
   async execute(sock, msg, args, prefix, options) {
     const start = Date.now();
 
-    // 1. Tuma ujumbe wa kwanza wa Pinging...
-    const initialMsg = await sock.sendMessage(msg.key.remoteJid, {
+    // 1. Tuma ujumbe wa kwanza
+    await sock.sendMessage(msg.key.remoteJid, {
       disclaimerText: 'SILA TECH BOT SYSTEM',
       richResponse: [
         {
-          text: '🏓 *Pinging...*'
+          text: ''
         }
       ]
     }, { quoted: msg });
@@ -35,16 +35,14 @@ export default {
 📊 *Status:* \`Active & Connected\`
 🤖 *Bot:* \`SILA TECH BOT\``;
 
-    // 3. Edit ujumbe wa kwanza na kuweka matokeo
+    // 3. Tuma ujumbe wa pili wa matokeo
     await sock.sendMessage(msg.key.remoteJid, {
-      text: pingText,
-      edit: initialMsg.key,
       disclaimerText: 'SILA TECH BOT SYSTEM',
       richResponse: [
         {
           text: pingText
         }
       ]
-    });
+    }, { quoted: msg });
   }
 };
