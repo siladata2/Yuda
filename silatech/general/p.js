@@ -1,72 +1,82 @@
-// silatech/general/ping.js
+// silatech/general/ping3.js
 export default {
-  name: 'ping2',
-  alias: ['pong', 'latency'],
-  description: 'Check bot latency with rich UI',
+  name: 'ping3',
+  alias: ['p3', 'speedtest'],
+  description: 'Check bot latency x3 with v2 buttons',
   category: 'general',
   ownerOnly: false,
 
   async execute(sock, msg, args, prefix, options) {
-    const start = Date.now();
+    const jid = msg.key.remoteJid;
+    
+    // Fanya ping mara 3
+    let results = [];
+    for(let i = 0; i < 3; i++) {
+      const start = Date.now();
+      await sock.sendMessage(jid, { text: '.' }, { quoted: msg });
+      results.push(Date.now() - start);
+      await new Promise(r => setTimeout(r, 200));
+    }
+    
+    const avg = Math.floor(results.reduce((a,b) => a+b)/3);
+    const min = Math.min(...results);
+    const max = Math.max(...results);
     const uptime = process.uptime();
-    const memory = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
+    const ram = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
 
-    // 1. Tuma "Pinging..." kwanza
-    const sent = await sock.sendMessage(msg.key.remoteJid, { 
-      text: '🏓 *RICHTOR PING* \n\n_Inapima kasi..._' 
-    });
-
-    const latency = Date.now() - start;
-
-    // 2. Tuma Rich Message na buttons
-    const richMessage = {
-      viewOnceMessage: {
-        message: {
-          interactiveMessage: {
-            body: {
-              text: `🏓 *PONG!* 🏓\n\n` +
-                    `⏱️ *Latency:* ${latency}ms\n` +
-                    `📊 *Status:* \`Connected\`\n` +
-                    `🕒 *Uptime:* ${Math.floor(uptime / 60)}m ${Math.floor(uptime % 60)}s\n` +
-                    `💾 *RAM:* ${memory} MB\n` +
-                    `⚡ *Powered by:* SILA TECH`
-            },
-            header: {
-              title: "RichTor System Status",
-              hasMediaAttachment: true,
-              // Weka thumbnail yako hapa
-              imageMessage: {
-                url: "https://i.imgur.com/xxxxxxx.jpg" // Weka link ya logo yako ya Blue on Black
-              }
-            },
-            footer: {
-              text: "© 2026 SILA TECH"
-            },
-            nativeFlowMessage: {
-              buttons: [
-                {
-                  name: "quick_reply",
-                  buttonParamsJson: JSON.stringify({
-                    display_text: "🔄 Ping Tena",
-                    id: `${prefix}ping`
-                  })
-                },
-                {
-                  name: "quick_reply", 
-                  buttonParamsJson: JSON.stringify({
-                    display_text: "📊 Menu",
-                    id: `${prefix}menu`
-                  })
-                }
-              ]
-            }
+    // Rich Message V2
+    const message = {
+      interactiveMessage: {
+        header: {
+          title: "🏓 RICHTOR PING V2",
+          subtitle: "SILA TECH SYSTEM",
+          hasMediaAttachment: true,
+          imageMessage: {
+            // Weka link ya logo yako hapa
+            url: "https://i.imgur.com/xxxxxxx.jpg" 
           }
+        },
+        body: {
+          text: `*Matokeo ya Ping x3*\n\n` +
+                `1️⃣ Test 1: ${results[0]}ms\n` +
+                `2️⃣ Test 2: ${results[1]}ms\n` +
+                `3️⃣ Test 3: ${results[2]}ms\n` +
+                `📊 *Average:* ${avg}ms\n` +
+                `⚡ *Min:* ${min}ms | *Max:* ${max}ms\n` +
+                `🕒 *Uptime:* ${Math.floor(uptime/3600)}h ${Math.floor((uptime%3600)/60)}m\n` +
+                `💾 *RAM:* ${ram} MB`
+        },
+        footer: {
+          text: "© 2026 RichTor by SILA TECH"
+        },
+        nativeFlowMessage: {
+          buttons: [
+            {
+              name: "quick_reply",
+              buttonParamsJson: JSON.stringify({
+                display_text: "🔄 Ping Tena",
+                id: `${prefix}ping3`
+              })
+            },
+            {
+              name: "quick_reply",
+              buttonParamsJson: JSON.stringify({
+                display_text: "📈 Stats",
+                id: `${prefix}stats`
+              })
+            },
+            {
+              name: "cta_url",
+              buttonParamsJson: JSON.stringify({
+                display_text: "🌐 Website",
+                url: "https://silatech.com" // Weka site yako
+              })
+            }
+          ]
         }
       }
     };
 
-    await sock.sendMessage(msg.key.remoteJid, richMessage, { 
-      quoted: sent 
-    });
+    await sock.sendMessage(jid, message, { quoted: msg });
   }
 };
