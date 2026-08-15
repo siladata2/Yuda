@@ -24,14 +24,19 @@ export default {
 
 Type *${prefix}menu* to see all available commands.`;
 
+    // 1. Tuma picha kwanza
+    await sock.sendMessage(msg.key.remoteJid, {
+      image: { url: imageUrl }
+    }, { quoted: msg });
+
+    // 2. Tuma rich response yenye text
     await sock.sendMessage(msg.key.remoteJid, {
       disclaimerText: 'SILA TECH BOT SYSTEM',
       richResponse: [
         {
-          image: { url: imageUrl },
-          caption: aliveText
+          text: aliveText
         }
       ]
-    }, { quoted: msg });
+    });
   }
 };
