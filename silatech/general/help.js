@@ -1,4 +1,3 @@
-// silatech/general/help.js
 export default {
   name: 'help2',
   alias: ['menu2', 'commands'],
@@ -7,11 +6,15 @@ export default {
   ownerOnly: false,
   
   async execute(sock, msg, args, prefix, options) {
-    const commands = options.commands || [];
-    let helpText = `🤖 *${options.BOT_NAME || 'Sila Tech Bot'}*\n\n`;
-    helpText += `📋 *Available Commands*\n\n`;
+    const sender = msg.key.remoteJid;
+    const commands = options.commands || new Map();
     
-    // Group commands by category
+    let txt = `✦ ${options.BOT_NAME || 'SILA TECH BOT'}\n`;
+    txt += `◉ Version: ${options.VERSION || '1.0.0'}\n`;
+    txt += `◉ Prefix: ${prefix}\n`;
+    txt += `◉ Mode: ${options.getBotMode ? options.getBotMode() : 'public'}\n`;
+    txt += `◉ Commands: ${commands.size}\n\n`;
+    
     const categories = new Map();
     for (const [name, cmd] of commands) {
       if (!categories.has(cmd.category)) {
@@ -21,19 +24,20 @@ export default {
     }
     
     for (const [category, cmds] of categories) {
-      helpText += `*${category.toUpperCase()}*\n`;
+      txt += `▸ ${category.toUpperCase()}\n`;
       for (const cmd of cmds) {
-        helpText += `  ${prefix}${cmd.name}`;
+        let line = `  ${prefix}${cmd.name}`;
         if (cmd.alias?.length) {
-          helpText += ` (${cmd.alias.join(', ')})`;
+          line += ` (${cmd.alias.join(', ')})`;
         }
-        helpText += ` - ${cmd.description || 'No description'}\n`;
+        line += ` - ${cmd.description || ''}`;
+        if (cmd.ownerOnly) line += ' [OWNER]';
+        txt += line + '\n';
       }
-      helpText += '\n';
+      txt += '\n';
     }
     
-    helpText += `\n👨‍💻 *Created by:* Sila Tech`;
-    
-    await sock.sendMessage(msg.key.remoteJid, { text: helpText });
+    txt += `✦ Created by Sila Tech`;
+    await sock.sendMessage(sender, { text: txt });
   }
 };
