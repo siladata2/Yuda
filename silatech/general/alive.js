@@ -1,7 +1,7 @@
 // silatech/general/alive.js
 export default {
-  name: 'alive',
-  alias: ['bot', 'info'],
+  name: 'alive2',
+  alias: ['bot2', 'info2'],
   description: 'Check bot online status',
   category: 'general',
   ownerOnly: false,
