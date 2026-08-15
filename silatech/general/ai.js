@@ -23,20 +23,21 @@ export default {
     }
 
     try {
-      // 1. Omba jibu kutoka kwa API yako
       const response = await axios.get('https://api.silatech.site/api/ai/gpt4-mini', {
         params: { message: text }
       });
 
-      // Chukua jibu kutoka kwa key ya 'answer'
       const aiReply = response.data?.answer || 'Haikuweza kupata jibu sahihi.';
 
-      // 2. Tuma jibu kwa kutumia richResponse
+      // Tuma jibu la AI ndani ya richResponse submessage
       await sock.sendMessage(msg.key.remoteJid, {
         disclaimerText: 'SILA TECH AI SYSTEM',
         richResponse: [
           {
-            text: `🤖 *GPT-4 MINI*\n\n${aiReply}`
+            text: `🤖 *GPT-4 MINI RESPONSE*`
+          },
+          {
+            text: aiReply
           }
         ]
       }, { quoted: msg });
