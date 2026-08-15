@@ -59,6 +59,23 @@ if (!fs.existsSync(path.join(SESSION_DIR, 'creds.json'))) {
 const app = express();
 const port = process.env.PORT || 9090;
 
+// Define getBotMode first before using it in HTML
+const MODE_FILE = './bot_mode.json';
+let currentMode = 'public';
+
+function getBotMode() {
+  try {
+    if (fs.existsSync(MODE_FILE)) {
+      const data = JSON.parse(fs.readFileSync(MODE_FILE, 'utf8'));
+      currentMode = data.mode || 'public';
+    }
+  } catch {}
+  return currentMode;
+}
+
+// Load mode
+getBotMode();
+
 const htmlPage = `
 <!DOCTYPE html>
 <html>
@@ -159,7 +176,7 @@ const htmlPage = `
       </div>
       <div class="status-row">
         <span class="status-label">Mode</span>
-        <span class="status-value" id="modeDisplay">${getBotMode() || 'public'}</span>
+        <span class="status-value">${getBotMode() || 'public'}</span>
       </div>
       <div class="status-row">
         <span class="status-label">Library</span>
@@ -269,19 +286,6 @@ async function loadCommands() {
 }
 
 //==================== MODE SYSTEM ====================
-const MODE_FILE = './bot_mode.json';
-let currentMode = 'public';
-
-function getBotMode() {
-  try {
-    if (fs.existsSync(MODE_FILE)) {
-      const data = JSON.parse(fs.readFileSync(MODE_FILE, 'utf8'));
-      currentMode = data.mode || 'public';
-    }
-  } catch {}
-  return currentMode;
-}
-
 function setBotMode(mode) {
   const validModes = ['public', 'private', 'self'];
   if (!validModes.includes(mode)) {
@@ -307,8 +311,7 @@ function isOwnerNumber(jid) {
   return cleanJid === cleanOwner;
 }
 
-getBotMode();
-console.log(`◉ Bot Mode: ${currentMode}`);
+console.log(`◉ Bot Mode: ${getBotMode()}`);
 
 //==================== MESSAGE HANDLER ====================
 async function handleMessage(msg) {
