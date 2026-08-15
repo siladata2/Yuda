@@ -1,7 +1,7 @@
 // silatech/general/help.js
 export default {
-  name: 'help',
-  alias: ['menu', 'commands'],
+  name: 'help2',
+  alias: ['menu2', 'commands'],
   description: 'Show available commands',
   category: 'general',
   ownerOnly: false,
