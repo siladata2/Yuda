@@ -23,32 +23,32 @@ export default {
     }
 
     try {
-      // 1. Inatuma maombi kwenye API
-      const response = await axios.get(`https://api.silatech.site/api/ai/gpt4-mini`, {
+      // 1. Omba jibu kutoka kwa API yako
+      const response = await axios.get('https://api.silatech.site/api/ai/gpt4-mini', {
         params: { message: text }
       });
 
-      // Chukua jibu kutoka kwa API (Badilisha response.data.result/message kulingana na muundo wa JSON ya API yako)
-      const aiReply = response.data?.result || response.data?.message || response.data?.reply || JSON.stringify(response.data);
+      // Chukua jibu kutoka kwa key ya 'answer'
+      const aiReply = response.data?.answer || 'Haikuweza kupata jibu sahihi.';
 
-      // 2. Inatuma jibu kwa kutumia richResponse
+      // 2. Tuma jibu kwa kutumia richResponse
       await sock.sendMessage(msg.key.remoteJid, {
         disclaimerText: 'SILA TECH AI SYSTEM',
         richResponse: [
           {
-            text: `🤖 *GPT-4 MINI RESPONSE*\n\n${aiReply}`
+            text: `🤖 *GPT-4 MINI*\n\n${aiReply}`
           }
         ]
       }, { quoted: msg });
 
     } catch (error) {
       console.error('API Error:', error);
-      
+
       await sock.sendMessage(msg.key.remoteJid, {
         disclaimerText: 'SILA TECH BOT ERROR',
         richResponse: [
           {
-            text: '❌ *Imeshindwa kupata jibu kutoka kwa AI. Jaribu tena baadae!*'
+            text: '❌ *Imeshindwa kuunganisha na server ya AI. Jaribu tena baadae!*'
           }
         ]
       }, { quoted: msg });
