@@ -1,53 +1,51 @@
-// silatech/ai/gpt.js
-import axios from 'axios';
+// silatech/general/ai.js
+import fetch from 'node-fetch';
 
 export default {
-  name: 'gpt',
-  alias: ['ai', 'gpt4'],
-  description: 'Ask GPT-4 Mini AI a question',
-  category: 'ai',
+  name: 'ai',
+  alias: ['gpt', 'ask'],
+  description: 'Chat with AI',
+  category: 'general',
   ownerOnly: false,
-
+  
   async execute(sock, msg, args, prefix, options) {
-    const query = args.join(' ');
-
-    if (!query) {
-      return await sock.sendMessage(msg.key.remoteJid, {
-        disclaimerText: 'SILA TECH BOT SYSTEM',
-        richResponse: [
-          {
-            text: `⚠️ *Tafadhali weka swali!*\n\nMfano: \`${prefix}gpt Habari yako?\``
-          }
-        ]
-      }, { quoted: msg });
+    const sender = msg.key.remoteJid;
+    
+    if (args.length === 0) {
+      await sock.sendMessage(sender, { 
+        text: `❌ Usage: ${prefix}ai [question]` 
+      });
+      return;
     }
 
     try {
-      const response = await axios.get(`https://api.silatech.site/api/ai/gpt4-mini?message=${encodeURIComponent(query)}`);
+      const question = args.join(' ');
+      const apiUrl = `https://api.silatech.site/api/ai/gpt4-mini?message=${encodeURIComponent(question)}`;
       
-      // Kuchukua jibu kutoka kwenye API (Badilisha response.data.result/message kulingana na muundo wa JSON wa API yako)
-      const aiResponse = response.data?.result || response.data?.response || response.data?.message || JSON.stringify(response.data);
-
-      await sock.sendMessage(msg.key.remoteJid, {
-        disclaimerText: 'SILA TECH AI SYSTEM',
-        richResponse: [
-          {
-            text: `🤖 *GPT-4 Mini*\n\n${aiResponse}`
-          }
-        ]
-      }, { quoted: msg });
-
+      const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'SilaTechBot/1.0'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const answer = data.response || data.result || data.message || data.data || JSON.stringify(data);
+      
+      await sock.sendMessage(sender, {
+        text: answer
+      });
+      
     } catch (error) {
-      console.error('Error in GPT Command:', error);
-      
-      await sock.sendMessage(msg.key.remoteJid, {
-        disclaimerText: 'SILA TECH BOT SYSTEM',
-        richResponse: [
-          {
-            text: '❌ *Imeshindwa kupata majibu kutoka kwa AI. Jaribu tena baadaye!*'
-          }
-        ]
-      }, { quoted: msg });
+      console.error('AI error:', error);
+      await sock.sendMessage(sender, { 
+        text: `❌ Error: ${error.message}` 
+      });
     }
   }
 };
