@@ -1,7 +1,9 @@
+import { ButtonV2 } from '@itsliaaa/baileys';
+
 export default {
   name: 'menu3',
-  alias: ['menu3', 'm3'],
-  description: 'Interactive menu with buttons',
+  alias: ['m3'],
+  description: 'Interactive menu with ButtonV2',
   category: 'general',
   ownerOnly: false,
   
@@ -11,45 +13,46 @@ export default {
     const mode = options.getBotMode ? options.getBotMode() : 'public';
     
     try {
-      // Send first row of buttons
+      // Send header message
       await sock.sendMessage(sender, {
         text: `✦ ${options.BOT_NAME || 'SILA TECH BOT'}\n◉ Prefix: ${prefix}\n◉ Mode: ${mode}\n◉ Commands: ${options.commands?.size || 0}\n◉ Status: Online\n\n▸ Select an option:`,
-        footer: '✦ Sila Tech Bot',
-        buttons: [
-          { buttonId: `${prefix}ping`, buttonText: { displayText: '🏓 Ping' }, type: 1 },
-          { buttonId: `${prefix}stats`, buttonText: { displayText: '📊 Stats' }, type: 1 },
-          { buttonId: `${prefix}ai`, buttonText: { displayText: '🤖 AI Chat' }, type: 1 },
-          { buttonId: `${prefix}generate`, buttonText: { displayText: '🎨 Generate' }, type: 1 }
-        ],
-        headerType: 1
+        footer: '✦ Created by Sila Tech'
       }, { quoted: msg });
       
-      // Send second row after a small delay
+      // Send buttons using ButtonV2
+      const button = new ButtonV2(sock);
+      
+      // Add buttons based on user type
+      button
+        .addButton("🏓 Ping", `${prefix}ping`)
+        .addButton("📊 Stats", `${prefix}stats`)
+        .addButton("🤖 AI Chat", `${prefix}ai`)
+        .addButton("🎨 Generate", `${prefix}generate`);
+      
+      // Send first row
+      await button.send(sender);
+      
+      // Second row of buttons
       setTimeout(async () => {
-        const buttons = [
-          { buttonId: `${prefix}groupinfo`, buttonText: { displayText: '👥 Group Info' }, type: 1 },
-          { buttonId: `${prefix}add`, buttonText: { displayText: '➕ Add Member' }, type: 1 }
-        ];
+        const button2 = new ButtonV2(sock);
+        
+        button2
+          .addButton("👥 Group", `${prefix}groupinfo`)
+          .addButton("➕ Add", `${prefix}add`);
         
         if (isOwner) {
-          buttons.push(
-            { buttonId: `${prefix}mode status`, buttonText: { displayText: `⚙️ Mode` }, type: 1 },
-            { buttonId: `${prefix}reload`, buttonText: { displayText: '🔄 Reload' }, type: 1 }
-          );
+          button2
+            .addButton("⚙️ Mode", `${prefix}mode status`)
+            .addButton("🔄 Reload", `${prefix}reload`);
         }
         
-        await sock.sendMessage(sender, {
-          text: isOwner ? '✦ Owner & Group Commands' : '✦ Group Commands',
-          footer: '✦ Sila Tech Bot',
-          buttons: buttons,
-          headerType: 1
-        }, { quoted: msg });
-      }, 800);
+        await button2.send(sender);
+      }, 500);
       
     } catch (error) {
       console.error('Menu error:', error);
       
-      // Fallback to text menu
+      // Fallback to text
       let txt = `✦ ${options.BOT_NAME || 'SILA TECH BOT'}\n`;
       txt += `◉ Prefix: ${prefix}\n`;
       txt += `◉ Mode: ${mode}\n\n`;
