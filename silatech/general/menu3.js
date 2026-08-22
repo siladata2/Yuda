@@ -11,59 +11,81 @@ export default {
     const mode = options.getBotMode ? options.getBotMode() : 'public';
     
     try {
-      const sections = [
-        {
-          title: "✦ General",
-          rows: [
-            { title: "📌 Help", description: "Show menu", id: `${prefix}menu` },
-            { title: "🏓 Ping", description: "Check latency", id: `${prefix}ping` },
-            { title: "📊 Stats", description: "Bot statistics", id: `${prefix}stats` }
-          ]
-        },
-        {
-          title: "✦ AI & Chat",
-          rows: [
-            { title: "🤖 AI Chat", description: "Chat with AI", id: `${prefix}ai` },
-            { title: "🎨 Generate", description: "Generate images", id: `${prefix}generate` }
-          ]
-        },
-        {
-          title: "✦ Group",
-          rows: [
-            { title: "👥 Group Info", description: "Group details", id: `${prefix}groupinfo` },
-            { title: "➕ Add Member", description: "Add to group", id: `${prefix}add` }
-          ]
-        }
-      ];
-      
-      if (isOwner) {
-        sections.push({
-          title: "✦ Owner",
-          rows: [
-            { title: "⚙️ Mode", description: `Current: ${mode}`, id: `${prefix}mode status` },
-            { title: "🔄 Reload", description: "Reload commands", id: `${prefix}reload` }
-          ]
-        });
-      }
-      
-      await new ButtonV2(sock)
-        .addRawButton({
-          buttonText: { displayText: "☰ Sila Menu" },
-          buttonId: "main_menu",
-          type: 1,
-          nativeFlowInfo: {
-            name: "single_select",
-            paramsJson: JSON.stringify({
-              title: `✦ ${options.BOT_NAME || 'SILA TECH BOT'}`,
-              sections: sections
-            })
+      // Send the menu with buttons using native WhatsApp format
+      await sock.sendMessage(sender, {
+        text: `✦ ${options.BOT_NAME || 'SILA TECH BOT'}\n◉ Prefix: ${prefix}\n◉ Mode: ${mode}\n◉ Status: Online\n\n▸ Select an option below:`,
+        footer: '✦ Created by Sila Tech',
+        buttons: [
+          {
+            buttonId: `${prefix}ping`,
+            buttonText: { displayText: '🏓 Ping' },
+            type: 1
+          },
+          {
+            buttonId: `${prefix}stats`,
+            buttonText: { displayText: '📊 Stats' },
+            type: 1
+          },
+          {
+            buttonId: `${prefix}ai`,
+            buttonText: { displayText: '🤖 AI Chat' },
+            type: 1
+          },
+          {
+            buttonId: `${prefix}generate`,
+            buttonText: { displayText: '🎨 Generate' },
+            type: 1
           }
-        })
-        .send(sender);
+        ],
+        headerType: 1,
+        viewOnce: false,
+        contextInfo: {
+          mentionedJid: [sender],
+          forwardingScore: 999,
+          isForwarded: true
+        }
+      }, { quoted: msg });
+      
+      // Send second set of buttons for more options
+      setTimeout(async () => {
+        const buttonRows = [
+          {
+            buttonId: `${prefix}groupinfo`,
+            buttonText: { displayText: '👥 Group Info' },
+            type: 1
+          },
+          {
+            buttonId: `${prefix}add`,
+            buttonText: { displayText: '➕ Add Member' },
+            type: 1
+          }
+        ];
         
+        if (isOwner) {
+          buttonRows.push({
+            buttonId: `${prefix}mode status`,
+            buttonText: { displayText: `⚙️ Mode: ${mode}` },
+            type: 1
+          });
+          buttonRows.push({
+            buttonId: `${prefix}reload`,
+            buttonText: { displayText: '🔄 Reload' },
+            type: 1
+          });
+        }
+        
+        await sock.sendMessage(sender, {
+          text: isOwner ? '✦ Owner & Group Commands' : '✦ Group Commands',
+          footer: '✦ Sila Tech Bot',
+          buttons: buttonRows,
+          headerType: 1
+        }, { quoted: msg });
+      }, 500);
+      
     } catch (error) {
       console.error('Menu error:', error);
       
+      // Fallback to text menu
       let txt = `✦ ${options.BOT_NAME || 'SILA TECH BOT'}\n`;
       txt += `◉ Prefix: ${prefix}\n`;
       txt += `◉ Mode: ${mode}\n\n`;
