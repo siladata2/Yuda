@@ -2,7 +2,7 @@
 import { ButtonV2 } from '@itsliaaa/baileys';
 
 export default {
-  name: 'menu',
+  name: 'menu3',
   alias: ['help', 'commands', 'cmds'],
   description: 'Interactive menu with categories',
   category: 'general',
