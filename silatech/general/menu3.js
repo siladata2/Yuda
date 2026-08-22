@@ -1,5 +1,3 @@
-import { ButtonV2 } from '@itsliaaa/baileys';
-
 export default {
   name: 'menu3',
   alias: ['help', 'commands'],
