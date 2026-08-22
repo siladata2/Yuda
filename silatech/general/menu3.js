@@ -1,3 +1,6 @@
+// silatech/general/menu3.js
+import ButtonV2 from '../buttonv2.js';
+
 export default {
   name: 'menu3',
   alias: ['m3'],
@@ -11,46 +14,35 @@ export default {
     const mode = options.getBotMode ? options.getBotMode() : 'public';
     
     try {
-      // Send header message
-      await sock.sendMessage(sender, {
-        text: `✦ ${options.BOT_NAME || 'SILA TECH BOT'}\n◉ Prefix: ${prefix}\n◉ Mode: ${mode}\n◉ Commands: ${options.commands?.size || 0}\n◉ Status: Online\n\n▸ Select an option:`,
-        footer: '✦ Created by Sila Tech'
-      }, { quoted: msg });
-      
-      // Send buttons using ButtonV2
+      // Create ButtonV2 instance
       const button = new ButtonV2(sock);
       
-      // Add buttons based on user type
+      // Add buttons
       button
         .addButton("🏓 Ping", `${prefix}ping`)
         .addButton("📊 Stats", `${prefix}stats`)
         .addButton("🤖 AI Chat", `${prefix}ai`)
-        .addButton("🎨 Generate", `${prefix}generate`);
+        .addButton("🎨 Generate", `${prefix}generate`)
+        .addButton("👥 Group Info", `${prefix}groupinfo`)
+        .addButton("➕ Add Member", `${prefix}add`);
       
-      // Send first row
-      await button.send(sender);
+      if (isOwner) {
+        button
+          .addButton("⚙️ Mode", `${prefix}mode status`)
+          .addButton("🔄 Reload", `${prefix}reload`);
+      }
       
-      // Second row of buttons
-      setTimeout(async () => {
-        const button2 = new ButtonV2(sock);
-        
-        button2
-          .addButton("👥 Group", `${prefix}groupinfo`)
-          .addButton("➕ Add", `${prefix}add`);
-        
-        if (isOwner) {
-          button2
-            .addButton("⚙️ Mode", `${prefix}mode status`)
-            .addButton("🔄 Reload", `${prefix}reload`);
-        }
-        
-        await button2.send(sender);
-      }, 500);
+      // Send buttons
+      await button.send(sender, {
+        text: `✦ ${options.BOT_NAME || 'SILA TECH BOT'}\n◉ Prefix: ${prefix}\n◉ Mode: ${mode}\n◉ Commands: ${options.commands?.size || 0}\n◉ Status: Online\n\n▸ Tap a button:`,
+        footer: '✦ Created by Sila Tech',
+        moreText: '✦ More commands:'
+      });
       
     } catch (error) {
-      console.error('Menu error:', error);
+      console.error('Menu3 error:', error);
       
-      // Fallback to text
+      // Fallback to text menu
       let txt = `✦ ${options.BOT_NAME || 'SILA TECH BOT'}\n`;
       txt += `◉ Prefix: ${prefix}\n`;
       txt += `◉ Mode: ${mode}\n\n`;
