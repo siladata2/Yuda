@@ -2,7 +2,7 @@ import { delay } from '@itsliaaa/baileys';
 
 export default {
   name: 'dmsg',
-  alias: ['delete', 'delmsg'],
+  alias: ['delete', 'del'],
   description: 'Delete replied message without admin role',
   category: 'owner',
   ownerOnly: true,
