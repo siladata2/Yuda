@@ -41,7 +41,7 @@ export default {
               {
                 name: "cta_url",
                 buttonParamsJson: JSON.stringify({
-                  "display_text": "✦ WhatsApp",
+                  "display_text": "✦ Contact",
                   "url": "https://wa.me/255637351031",
                   "merchant_url": "https://wa.me/255637351031"
                 })
@@ -87,14 +87,14 @@ export default {
                   {
                     "id": "profile_image",
                     "component": "Image",
-                    "url": "https://files.catbox.moe/ms64an.jpeg",
+                    "url": "https://i.ibb.co/674988wP/silatech.jpg",
                     "variant": "header",
                     "fit": "none"
                   },
                   {
                     "id": "profile",
                     "component": "Text",
-                    "text": "✦ WhatsApp Bot Developer\n◉ Specializing in Baileys & Node.js\n◉ Creating interactive bots for communities",
+                    "text": "✦ WhatsApp Bot Developer\n◉ Specializing in Baileys & Node.js\n◉ Creating bots for communities",
                     "variant": "body"
                   },
                   {
@@ -114,7 +114,7 @@ export default {
                   {
                     "id": "about_content",
                     "component": "Text",
-                    "text": "Passionate developer focused on building advanced WhatsApp bots using Baileys framework. Expert in Node.js, JavaScript, and creating interactive automation solutions.",
+                    "text": "Passionate developer focused on building advanced WhatsApp bots using Baileys framework. Expert in Node.js, JavaScript, and creating automation solutions.",
                     "variant": "body"
                   },
                   {
@@ -217,7 +217,7 @@ export default {
                   {
                     "id": "contact",
                     "component": "Text",
-                    "text": "Status: Active • GitHub: Sila-Md • WhatsApp: +255637351031",
+                    "text": "Status: Active",
                     "variant": "caption"
                   }
                 ]
