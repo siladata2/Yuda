@@ -1,9 +1,9 @@
 import { randomUUID } from 'crypto';
 
 export default {
-  name: 'panda',
-  alias: ['porto', 'profile', 'a2ui'],
-  description: 'Display portfolio using A2UI',
+  name: 'portfolio',
+  alias: ['porto', 'profile', 'silatech'],
+  description: 'Display developer portfolio using A2UI',
   category: 'general',
   ownerOnly: false,
   
@@ -11,10 +11,8 @@ export default {
     const sender = msg.key.remoteJid;
     
     try {
-      // Generate unique UUID for widget
       const widgetUuid = randomUUID();
       
-      // Build the A2UI message
       const content = {
         messageContextInfo: {
           messageSecret: "6dl5L3BxZ/haIDZtasZ9fcN4X+nGecLNbuiLh1slHLw="
@@ -27,7 +25,7 @@ export default {
             text: ""
           },
           footer: {
-            text: "✦ Sila Tech Bot"
+            text: "✦ Sila Tech"
           },
           nativeFlowMessage: {
             buttons: [
@@ -35,17 +33,17 @@ export default {
               {
                 name: "cta_url",
                 buttonParamsJson: JSON.stringify({
-                  "display_text": "✦ Portfolio",
-                  "url": "https://github.com/itsliaaa",
-                  "merchant_url": "https://github.com/itsliaaa"
+                  "display_text": "✦ GitHub",
+                  "url": "https://github.com/Sila-Md",
+                  "merchant_url": "https://github.com/Sila-Md"
                 })
               },
               {
                 name: "cta_url",
                 buttonParamsJson: JSON.stringify({
-                  "display_text": "✦ Contact",
-                  "url": "https://wa.me/255636341031",
-                  "merchant_url": "https://wa.me/255636341031"
+                  "display_text": "✦ WhatsApp",
+                  "url": "https://wa.me/255637351031",
+                  "merchant_url": "https://wa.me/255637351031"
                 })
               }
             ],
@@ -75,7 +73,7 @@ export default {
                   {
                     "id": "portfolio_header",
                     "component": "Text",
-                    "text": "✦ Sila Tech Portfolio",
+                    "text": "✦ Sila Tech",
                     "variant": "h1"
                   },
                   {
@@ -96,7 +94,7 @@ export default {
                   {
                     "id": "profile",
                     "component": "Text",
-                    "text": "Sila Tech - WhatsApp Bot Developer dengan spesialisasi Baileys, Node.js, dan menciptakan bot interaktif untuk komunitas.",
+                    "text": "✦ WhatsApp Bot Developer\n◉ Specializing in Baileys & Node.js\n◉ Creating interactive bots for communities",
                     "variant": "body"
                   },
                   {
@@ -116,7 +114,7 @@ export default {
                   {
                     "id": "about_content",
                     "component": "Text",
-                    "text": "Saya adalah developer WhatsApp Bot yang berfokus pada pembuatan bot dengan fitur canggih menggunakan Baileys. Keahlian utama saya adalah Node.js, JavaScript, dan pengembangan bot interaktif.",
+                    "text": "Passionate developer focused on building advanced WhatsApp bots using Baileys framework. Expert in Node.js, JavaScript, and creating interactive automation solutions.",
                     "variant": "body"
                   },
                   {
@@ -163,7 +161,7 @@ export default {
                   {
                     "id": "project_1_description",
                     "component": "Text",
-                    "text": "WhatsApp Bot full-featured dengan anti-systems, AI, dan interactive menus.",
+                    "text": "Advanced WhatsApp Bot with anti-systems, AI features, and interactive menus using Baileys.",
                     "variant": "body"
                   },
                   {
@@ -182,13 +180,13 @@ export default {
                   {
                     "id": "project_2_title",
                     "component": "Text",
-                    "text": "✦ A2UI Framework",
+                    "text": "✦ Sila-MD Framework",
                     "variant": "h3"
                   },
                   {
                     "id": "project_2_description",
                     "component": "Text",
-                    "text": "Interactive UI framework for WhatsApp using AI Agent User Interface.",
+                    "text": "Open source WhatsApp Bot framework with modular architecture and extensive features.",
                     "variant": "body"
                   },
                   {
@@ -207,19 +205,19 @@ export default {
                   {
                     "id": "project_3_title",
                     "component": "Text",
-                    "text": "✦ Community Bot",
+                    "text": "✦ A2UI Integration",
                     "variant": "h3"
                   },
                   {
                     "id": "project_3_description",
                     "component": "Text",
-                    "text": "Bot for community management with group features and auto-moderation.",
+                    "text": "Interactive UI components for WhatsApp using AI Agent User Interface framework.",
                     "variant": "body"
                   },
                   {
                     "id": "contact",
                     "component": "Text",
-                    "text": "Status: Active • Location: Tanzania • Specialization: Bot Development",
+                    "text": "Status: Active • GitHub: Sila-Md • WhatsApp: +255637351031",
                     "variant": "caption"
                   }
                 ]
@@ -233,7 +231,6 @@ export default {
         }
       };
       
-      // Send the message with additional nodes
       await sock.relayMessage(sender, content, {
         additionalNodes: [
           {
@@ -261,16 +258,9 @@ export default {
         ]
       });
       
-      // Send confirmation
-      await sock.sendMessage(sender, {
-        text: `✦ Portfolio sent successfully!\n◉ Widget ID: ${widgetUuid.substring(0, 8)}...`
-      });
-      
     } catch (error) {
       console.error('Portfolio error:', error);
-      await sock.sendMessage(sender, {
-        text: `✖ Failed to send portfolio: ${error.message}`
-      });
+      await sock.sendMessage(sender, { text: `✖ ${error?.message || error}` });
     }
   }
 };
