@@ -59,22 +59,11 @@ if (!fs.existsSync(path.join(SESSION_DIR, 'creds.json'))) {
 const app = express();
 const port = process.env.PORT || 9090;
 
-// Define getBotMode first before using it in HTML
-const MODE_FILE = './bot_mode.json';
-let currentMode = 'public';
-
-function getBotMode() {
-  try {
-    if (fs.existsSync(MODE_FILE)) {
-      const data = JSON.parse(fs.readFileSync(MODE_FILE, 'utf8'));
-      currentMode = data.mode || 'public';
-    }
-  } catch {}
-  return currentMode;
-}
-
-// Load mode
-getBotMode();
+// Get bot settings for HTML
+const botName = config.BOT_NAME || 'SILA TECH BOT';
+const version = config.VERSION || '1.0.0';
+const prefix = config.PREFIX || '.';
+const mode = getBotMode() || 'public';
 
 const htmlPage = `
 <!DOCTYPE html>
@@ -82,7 +71,7 @@ const htmlPage = `
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SILA TECH BOT</title>
+  <title>${botName}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -154,7 +143,7 @@ const htmlPage = `
   <div class="container">
     <div class="header">
       <span class="logo">✦</span>
-      <h1 class="title"><span>SILA TECH BOT</span></h1>
+      <h1 class="title"><span>${botName}</span></h1>
       <p class="subtitle">WhatsApp Bot Framework</p>
     </div>
     <div class="status-card">
@@ -164,19 +153,19 @@ const htmlPage = `
       </div>
       <div class="status-row">
         <span class="status-label">Bot Name</span>
-        <span class="status-value">${config.BOT_NAME || 'SILA TECH BOT'}</span>
+        <span class="status-value">${botName}</span>
       </div>
       <div class="status-row">
         <span class="status-label">Version</span>
-        <span class="status-value">${config.VERSION || '1.0.0'}</span>
+        <span class="status-value">${version}</span>
       </div>
       <div class="status-row">
         <span class="status-label">Prefix</span>
-        <span class="status-value">${config.PREFIX || '!'}</span>
+        <span class="status-value">${prefix}</span>
       </div>
       <div class="status-row">
         <span class="status-label">Mode</span>
-        <span class="status-value">${getBotMode() || 'public'}</span>
+        <span class="status-value">${mode}</span>
       </div>
       <div class="status-row">
         <span class="status-label">Library</span>
@@ -212,7 +201,14 @@ const htmlPage = `
 
 app.get('/', (req, res) => res.send(htmlPage));
 app.get('/health', (req, res) => res.json({ status: 'healthy', connected: isConnected || false, uptime: process.uptime() }));
-app.get('/status', (req, res) => res.json({ status: isConnected ? 'online' : 'offline', bot: config.BOT_NAME, version: config.VERSION, prefix: config.PREFIX, mode: getBotMode(), uptime: process.uptime() }));
+app.get('/status', (req, res) => res.json({ 
+  status: isConnected ? 'online' : 'offline', 
+  bot: config.BOT_NAME, 
+  version: config.VERSION, 
+  prefix: config.PREFIX, 
+  mode: getBotMode(), 
+  uptime: process.uptime() 
+}));
 
 app.listen(port, () => {
   console.log(`◉ Web server running on port ${port}`);
@@ -243,6 +239,7 @@ async function loadCommands() {
     fs.mkdirSync(path.join(commandsDir, 'general'), { recursive: true });
     fs.mkdirSync(path.join(commandsDir, 'owner'), { recursive: true });
     fs.mkdirSync(path.join(commandsDir, 'group'), { recursive: true });
+    fs.mkdirSync(path.join(commandsDir, 'sticker'), { recursive: true });
     return;
   }
 
@@ -286,6 +283,19 @@ async function loadCommands() {
 }
 
 //==================== MODE SYSTEM ====================
+const MODE_FILE = './bot_mode.json';
+let currentMode = 'public';
+
+function getBotMode() {
+  try {
+    if (fs.existsSync(MODE_FILE)) {
+      const data = JSON.parse(fs.readFileSync(MODE_FILE, 'utf8'));
+      currentMode = data.mode || 'public';
+    }
+  } catch {}
+  return currentMode;
+}
+
 function setBotMode(mode) {
   const validModes = ['public', 'private', 'self'];
   if (!validModes.includes(mode)) {
@@ -311,6 +321,7 @@ function isOwnerNumber(jid) {
   return cleanJid === cleanOwner;
 }
 
+getBotMode();
 console.log(`◉ Bot Mode: ${getBotMode()}`);
 
 //==================== MESSAGE HANDLER ====================
@@ -330,15 +341,47 @@ async function handleMessage(msg) {
     
     if (!text) return;
     
-    const prefix = config.PREFIX || '!';
-    if (!text.startsWith(prefix)) return;
+    // Get current prefix and settings
+    const prefix = config.PREFIX || '.';
+    const allowPrefixless = config.ALLOW_PREFIXLESS !== undefined ? config.ALLOW_PREFIXLESS : true;
     
-    const args = text.slice(prefix.length).trim().split(/\s+/);
-    const commandName = args.shift().toLowerCase();
+    let commandName = '';
+    let args = [];
+    let usedPrefix = prefix;
+    
+    // Check if message starts with prefix
+    if (text.startsWith(prefix)) {
+      const parts = text.slice(prefix.length).trim().split(/\s+/);
+      commandName = parts.shift().toLowerCase();
+      args = parts;
+      usedPrefix = prefix;
+    } 
+    // Check if prefixless is allowed
+    else if (allowPrefixless) {
+      const words = text.trim().split(/\s+/);
+      const firstWord = words[0].toLowerCase();
+      
+      // Check if first word is a command
+      if (commands.has(firstWord)) {
+        commandName = firstWord;
+        args = words.slice(1);
+        usedPrefix = '';
+      } else {
+        // Check aliases
+        for (const [cmdName, command] of commands.entries()) {
+          if (command.alias && command.alias.includes(firstWord)) {
+            commandName = cmdName;
+            args = words.slice(1);
+            usedPrefix = '';
+            break;
+          }
+        }
+      }
+    }
     
     if (!commandName) return;
     
-    console.log(`◈ ${commandName} from ${fromMe ? 'BOT' : sender}`);
+    console.log(`◈ ${commandName} from ${fromMe ? 'BOT' : sender} (prefix: ${usedPrefix || 'none'})`);
     
     const command = commands.get(commandName);
     if (!command) return;
@@ -347,17 +390,17 @@ async function handleMessage(msg) {
     const isOwner = isOwnerNumber(sender) || fromMe;
     
     if (mode === 'self' && !isOwner && !fromMe) {
-      await sock.sendMessage(sender, { text: '🔒 Self mode active' });
+      await sock.sendMessage(sender, { text: 'Self mode active' });
       return;
     }
     
     if (mode === 'private' && !isOwner && !fromMe) {
-      await sock.sendMessage(sender, { text: '🔒 Private mode active' });
+      await sock.sendMessage(sender, { text: 'Private mode active' });
       return;
     }
     
     if (command.ownerOnly && !isOwner && !fromMe) {
-      await sock.sendMessage(sender, { text: '⛔ Owner only' });
+      await sock.sendMessage(sender, { text: 'Owner only' });
       return;
     }
     
@@ -365,13 +408,16 @@ async function handleMessage(msg) {
       await command.execute(sock, msg, args, prefix, {
         BOT_NAME: config.BOT_NAME,
         VERSION: config.VERSION,
+        FOOTER: config.FOOTER,
+        BOT_IMAGE: config.BOT_IMAGE,
         isOwner: () => isOwner || fromMe,
         isGroup,
         commands,
         commandCategories,
         getBotMode,
         setBotMode,
-        isOwnerNumber
+        isOwnerNumber,
+        config
       });
     } catch (error) {
       console.error(`✖ ${commandName} failed:`, error.message);
