@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 
 export default {
   name: 'menu2',
-  alias: ['s2', 'ss2', 'm2'],
+  alias: ['s2', 'ss2', 'menu2'],
   description: 'Display Sila menu with all commands',
   category: 'general',
   ownerOnly: false,
@@ -67,18 +67,15 @@ export default {
         }
       });
       
-      // Create command buttons from categories
+      // Create command buttons - ALL commands in vertical list
+      const allCommands = [];
       const categoryNames = Array.from(categories.keys());
-      const categoryButtons = [];
       
-      // Limit to first 6 categories for display
-      const displayCategories = categoryNames.slice(0, 6);
-      
-      for (const cat of displayCategories) {
+      for (const cat of categoryNames) {
         const cmds = categories.get(cat) || [];
-        const firstCmd = cmds[0]?.name || '';
         
-        categoryButtons.push({
+        // Add category header as text
+        allCommands.push({
           "__typename": "GenAI3PExtWidgetPrimitive",
           "header": {
             "__typename": "GenAI3PExtWidgetStandardHeader",
@@ -87,9 +84,9 @@ export default {
           "body": {
             "__typename": "GenAI3PExtCalendarEventList",
             "sections": [],
-            "ctas": cmds.slice(0, 3).map((cmd, idx) => ({
+            "ctas": cmds.map((cmd) => ({
               "__typename": "GenAI3PExtWidgetCTA",
-              "label": cmd.name,
+              "label": `${prefix}${cmd.name}`,
               "state": "PENDING",
               "kind": "OTHER",
               "tool_call_id": `${prefix}${cmd.name}`,
@@ -102,15 +99,13 @@ export default {
         });
       }
       
-      // Add category buttons
-      if (categoryButtons.length > 0) {
-        sections.push({
-          "view_model": {
-            "primitives": categoryButtons,
-            "__typename": "GenAIHScrollLayoutViewModel"
-          }
-        });
-      }
+      // Add all commands in vertical layout (one after another)
+      sections.push({
+        "view_model": {
+          "primitives": allCommands,
+          "__typename": "GenAIVScrollLayoutViewModel"
+        }
+      });
       
       // Add footer with group and channel
       sections.push({
@@ -162,7 +157,7 @@ export default {
     } catch (error) {
       console.error('[nixmenu]', error);
       
-      // Fallback to text menu if rich response fails
+      // Fallback to text menu
       let txt = `✦ Sila Menu\n◉ Prefix: ${prefix}\n◉ Commands: ${commands.size}\n\n`;
       
       const categories = new Map();
@@ -175,10 +170,9 @@ export default {
       
       for (const [category, cmds] of categories) {
         txt += `▸ ${category.toUpperCase()}\n`;
-        for (const cmd of cmds.slice(0, 5)) {
+        for (const cmd of cmds) {
           txt += `  ${prefix}${cmd}\n`;
         }
-        if (cmds.length > 5) txt += `  +${cmds.length - 5} more\n`;
         txt += '\n';
       }
       
