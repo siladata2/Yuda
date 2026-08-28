@@ -9,7 +9,7 @@ const defaultConfig = {
   BOT_NAME: 'SILA TECH BOT',
   VERSION: '1.0.0',
   PREFIX: '.',
-  OWNER_NUMBER: '255637351031',
+  OWNER_NUMBER: '255637351032',
   FOOTER: 'Created by Sila Tech',
   BOT_IMAGE: 'https://i.ibb.co/674988wP/silatech.jpg',
   MODE: 'public',
