@@ -2,8 +2,8 @@ import { randomUUID } from 'crypto';
 
 export default {
   name: 'smenu',
-  alias: ['ssmenu', 'six', 'menus'],
-  description: 'Display SILA menu with rich response',
+  alias: ['ssmenu', 's', 'menus'],
+  description: 'Display Sila menu with rich response',
   category: 'general',
   ownerOnly: false,
   
@@ -29,7 +29,7 @@ export default {
                       "view_model": {
                         "primitive": {
                           "__typename": "FOATextPrimitive",
-                          "text": "Sila Tech"
+                          "text": "let me know~"
                         },
                         "__typename": "GenAISingleLayoutViewModel"
                       }
@@ -37,7 +37,7 @@ export default {
                     {
                       "view_model": {
                         "primitive": {
-                          "text": "Created by Sila",
+                          "text": "im here~\nWelcome to Sila Menu",
                           "__typename": "GenAIMarkdownTextUXPrimitive"
                         },
                         "__typename": "GenAISingleLayoutViewModel"
@@ -79,10 +79,10 @@ export default {
                                   "label": "Help",
                                   "state": "PENDING",
                                   "kind": "OTHER",
-                                  "tool_call_id": "00",
+                                  "tool_call_id": "help",
                                   "toast": {
                                     "__typename": "GenAI3PExtWidgetToast",
-                                    "label": "NIX"
+                                    "label": "help"
                                   }
                                 },
                                 {
@@ -90,10 +90,10 @@ export default {
                                   "label": "Ping",
                                   "state": "PENDING",
                                   "kind": "OTHER",
-                                  "tool_call_id": "01",
+                                  "tool_call_id": "ping",
                                   "toast": {
                                     "__typename": "GenAI3PExtWidgetToast",
-                                    "label": "NIX"
+                                    "label": "ping"
                                   }
                                 },
                                 {
@@ -101,10 +101,10 @@ export default {
                                   "label": "Stats",
                                   "state": "PENDING",
                                   "kind": "OTHER",
-                                  "tool_call_id": "02",
+                                  "tool_call_id": "stats",
                                   "toast": {
                                     "__typename": "GenAI3PExtWidgetToast",
-                                    "label": "NIX"
+                                    "label": "stats"
                                   }
                                 }
                               ]
@@ -114,7 +114,7 @@ export default {
                             "__typename": "GenAI3PExtWidgetPrimitive",
                             "header": {
                               "__typename": "GenAI3PExtWidgetStandardHeader",
-                              "title": "Commands"
+                              "title": "Sila"
                             },
                             "body": {
                               "__typename": "GenAI3PExtCalendarEventList",
@@ -122,13 +122,13 @@ export default {
                               "ctas": [
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": ".menu",
+                                  "label": "Menu",
                                   "state": "PENDING",
                                   "kind": "OTHER",
-                                  "tool_call_id": "10",
+                                  "tool_call_id": "menu",
                                   "toast": {
                                     "__typename": "GenAI3PExtWidgetToast",
-                                    "label": "NIX"
+                                    "label": "menu"
                                   }
                                 },
                                 {
@@ -136,10 +136,10 @@ export default {
                                   "label": "Mode",
                                   "state": "PENDING",
                                   "kind": "OTHER",
-                                  "tool_call_id": "11",
+                                  "tool_call_id": "mode",
                                   "toast": {
                                     "__typename": "GenAI3PExtWidgetToast",
-                                    "label": "NIX"
+                                    "label": "mode"
                                   }
                                 },
                                 {
@@ -147,10 +147,10 @@ export default {
                                   "label": "Reload",
                                   "state": "PENDING",
                                   "kind": "OTHER",
-                                  "tool_call_id": "12",
+                                  "tool_call_id": "reload",
                                   "toast": {
                                     "__typename": "GenAI3PExtWidgetToast",
-                                    "label": "NIX"
+                                    "label": "reload"
                                   }
                                 }
                               ]
