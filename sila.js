@@ -55,6 +55,48 @@ if (!fs.existsSync(path.join(SESSION_DIR, 'creds.json'))) {
   }
 }
 
+//==================== MODE SYSTEM ====================
+const MODE_FILE = './bot_mode.json';
+let currentMode = 'public';
+
+function getBotMode() {
+  try {
+    if (fs.existsSync(MODE_FILE)) {
+      const data = JSON.parse(fs.readFileSync(MODE_FILE, 'utf8'));
+      currentMode = data.mode || 'public';
+    }
+  } catch {}
+  return currentMode;
+}
+
+function setBotMode(mode) {
+  const validModes = ['public', 'private', 'self'];
+  if (!validModes.includes(mode)) {
+    return { success: false, error: 'Invalid mode' };
+  }
+  try {
+    fs.writeFileSync(MODE_FILE, JSON.stringify({ 
+      mode, 
+      updatedAt: new Date().toISOString()
+    }, null, 2));
+    currentMode = mode;
+    return { success: true, mode };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+function isOwnerNumber(jid) {
+  const ownerNumber = config.OWNER_NUMBER || process.env.OWNER_NUMBER || '';
+  if (!ownerNumber) return false;
+  const cleanJid = jid?.split('@')[0]?.replace(/\D/g, '');
+  const cleanOwner = ownerNumber.replace(/\D/g, '');
+  return cleanJid === cleanOwner;
+}
+
+// Load mode
+getBotMode();
+
 //==================== EXPRESS SERVER ====================
 const app = express();
 const port = process.env.PORT || 9090;
@@ -281,48 +323,6 @@ async function loadCommands() {
   await loadDir(commandsDir);
   console.log(`✔ Loaded ${commands.size} commands`);
 }
-
-//==================== MODE SYSTEM ====================
-const MODE_FILE = './bot_mode.json';
-let currentMode = 'public';
-
-function getBotMode() {
-  try {
-    if (fs.existsSync(MODE_FILE)) {
-      const data = JSON.parse(fs.readFileSync(MODE_FILE, 'utf8'));
-      currentMode = data.mode || 'public';
-    }
-  } catch {}
-  return currentMode;
-}
-
-function setBotMode(mode) {
-  const validModes = ['public', 'private', 'self'];
-  if (!validModes.includes(mode)) {
-    return { success: false, error: 'Invalid mode' };
-  }
-  try {
-    fs.writeFileSync(MODE_FILE, JSON.stringify({ 
-      mode, 
-      updatedAt: new Date().toISOString()
-    }, null, 2));
-    currentMode = mode;
-    return { success: true, mode };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
-}
-
-function isOwnerNumber(jid) {
-  const ownerNumber = config.OWNER_NUMBER || process.env.OWNER_NUMBER || '';
-  if (!ownerNumber) return false;
-  const cleanJid = jid?.split('@')[0]?.replace(/\D/g, '');
-  const cleanOwner = ownerNumber.replace(/\D/g, '');
-  return cleanJid === cleanOwner;
-}
-
-getBotMode();
-console.log(`◉ Bot Mode: ${getBotMode()}`);
 
 //==================== MESSAGE HANDLER ====================
 async function handleMessage(msg) {
