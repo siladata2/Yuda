@@ -1,9 +1,9 @@
 import { randomUUID } from 'crypto';
 
 export default {
-  name: 'nixmenu',
-  alias: ['nxmenu', 'nix', 'menu2'],
-  description: 'Display NIX menu with rich response',
+  name: 'smenu',
+  alias: ['ssmenu', 'six', 'menus'],
+  description: 'Display SILA menu with rich response',
   category: 'general',
   ownerOnly: false,
   
@@ -29,7 +29,7 @@ export default {
                       "view_model": {
                         "primitive": {
                           "__typename": "FOATextPrimitive",
-                          "text": "✦ let me know~"
+                          "text": "Sila Tech"
                         },
                         "__typename": "GenAISingleLayoutViewModel"
                       }
@@ -37,7 +37,7 @@ export default {
                     {
                       "view_model": {
                         "primitive": {
-                          "text": "✦ im here~\n◉ Welcome to NIX Menu",
+                          "text": "Created by Sila",
                           "__typename": "GenAIMarkdownTextUXPrimitive"
                         },
                         "__typename": "GenAISingleLayoutViewModel"
@@ -50,12 +50,12 @@ export default {
                           "preview_image": {
                             "__typename": "GenAIMediaItem",
                             "mime_type": "image/jpeg",
-                            "url": "https://cdn.ornzora.eu.cc/f4ec8425-c846-4937-b838-9291bf0514e2-FIORA.jpg"
+                            "url": "https://i.ibb.co/674988wP/silatech.jpg"
                           },
                           "full_image": {
                             "__typename": "GenAIMediaItem",
                             "mime_type": "image/jpeg",
-                            "url": "https://cdn.ornzora.eu.cc/2fa0763e-011f-4d18-b69b-32dd24282393-FIORA.jpg"
+                            "url": "https://i.ibb.co/674988wP/silatech.jpg"
                           }
                         },
                         "__typename": "GenAISingleLayoutViewModel"
@@ -68,7 +68,7 @@ export default {
                             "__typename": "GenAI3PExtWidgetPrimitive",
                             "header": {
                               "__typename": "GenAI3PExtWidgetStandardHeader",
-                              "title": "✦ LIST-X"
+                              "title": "Menu"
                             },
                             "body": {
                               "__typename": "GenAI3PExtCalendarEventList",
@@ -76,7 +76,7 @@ export default {
                               "ctas": [
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "✦ Menu",
+                                  "label": "Help",
                                   "state": "PENDING",
                                   "kind": "OTHER",
                                   "tool_call_id": "00",
@@ -87,7 +87,7 @@ export default {
                                 },
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "✦ Profile",
+                                  "label": "Ping",
                                   "state": "PENDING",
                                   "kind": "OTHER",
                                   "tool_call_id": "01",
@@ -98,7 +98,7 @@ export default {
                                 },
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "✦ Script",
+                                  "label": "Stats",
                                   "state": "PENDING",
                                   "kind": "OTHER",
                                   "tool_call_id": "02",
@@ -114,7 +114,7 @@ export default {
                             "__typename": "GenAI3PExtWidgetPrimitive",
                             "header": {
                               "__typename": "GenAI3PExtWidgetStandardHeader",
-                              "title": "✦ NX-T"
+                              "title": "Commands"
                             },
                             "body": {
                               "__typename": "GenAI3PExtCalendarEventList",
@@ -122,7 +122,7 @@ export default {
                               "ctas": [
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "✦ NIXCODE",
+                                  "label": ".menu",
                                   "state": "PENDING",
                                   "kind": "OTHER",
                                   "tool_call_id": "10",
@@ -133,7 +133,7 @@ export default {
                                 },
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "✦ NIXEL",
+                                  "label": "Mode",
                                   "state": "PENDING",
                                   "kind": "OTHER",
                                   "tool_call_id": "11",
@@ -144,7 +144,7 @@ export default {
                                 },
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "✦ FIORA",
+                                  "label": "Reload",
                                   "state": "PENDING",
                                   "kind": "OTHER",
                                   "tool_call_id": "12",
@@ -165,15 +165,15 @@ export default {
                         "primitives": [
                           {
                             "__typename": "GenAIFooterActionPrimitive",
-                            "cta_text": "✦ WhatsApp Group",
+                            "cta_text": "WhatsApp Group",
                             "cta_type": "OPEN_URL",
-                            "cta_url": "https://chat.whatsapp.com/J7OzqKB7Bl2AGIcNEYsdch?s=cl&p=a&ilr=0"
+                            "cta_url": "https://chat.whatsapp.com/IS276Wg9zcuCnJRiMDI64g?s=cl&p=a&mlu=4"
                           },
                           {
                             "__typename": "GenAIFooterActionPrimitive",
-                            "cta_text": "✦ WhatsApp Channel",
+                            "cta_text": "WhatsApp Channel",
                             "cta_type": "OPEN_URL",
-                            "cta_url": "https://whatsapp.com/channel/0029VbCV1ck8fewpdNb2TY2k"
+                            "cta_url": "https://whatsapp.com/channel/0029VbBG4gfISTkCpKxyMH02"
                           }
                         ],
                         "__typename": "GenAIHScrollLayoutViewModel"
