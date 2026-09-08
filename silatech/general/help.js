@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { downloadContentFromMessage } from '@itsliaaa/baileys';
 
 export default {
   name: 'h',
@@ -10,7 +11,7 @@ export default {
   async execute(sock, msg, args, prefix, options) {
     const sender = msg.key.remoteJid;
     
-    await new ButtonV2(sock)
+    await new Button(sock)
       .setBody('Halo dunia')
       .setFooter('Footer Message')
       .setThumbnail(
