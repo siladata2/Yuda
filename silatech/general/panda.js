@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 
 export default {
-  name: 'portfolio',
+  name: 'silatech',
   alias: ['porto', 'profile', 'silatech'],
   description: 'Display developer portfolio using A2UI',
   category: 'general',
