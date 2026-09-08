@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export default {
   name: 'silaai',
-  alias: ['silaa', 'ai', 'ask'],
+  alias: ['silaa', 'ai', 'a'],
   description: 'Chat with Sila AI',
   category: 'general',
   ownerOnly: false,
