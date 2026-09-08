@@ -1,47 +1,51 @@
 import axios from 'axios';
 
 export default {
-  name: 'nsfw',
-  alias: ['18+', 'dewasa', 'nsfwpic'],
-  description: 'Get NSFW images from Sila API',
+  name: 'nsfwass',
+  alias: ['ass', 'pxass'],
+  description: 'Get NSFW Ass image',
   category: 'nsfw',
   ownerOnly: false,
-  
+
   async execute(sock, msg, args, prefix, options) {
     const sender = msg.key.remoteJid;
-    
+
     try {
-      // Send loading
       const loadingMsg = await sock.sendMessage(sender, { 
-        text: '✦ Loading NSFW...' 
+        text: '✦ Fetching image, please wait...' 
       });
-      
-      // Fetch from API
-      const response = await axios.get('https://api.silatech.site/api/nsfw/px-nsfw-ass');
-      
+
+      // Request ya direct bila query parameters yoyote
+      const response = await axios({
+        method: 'get',
+        url: 'https://api.silatech.site/api/nsfw/px-nsfw-ass',
+        params: {}, // Inahakikisha hakuna extra parameters zinazoongezwa
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0' // Inasaidia kuzuia kuonekana kama sandbox/bot request
+        }
+      });
+
       if (response.data?.status && response.data?.result) {
         const imageUrl = response.data.result;
-        
-        // Send image
+
+        await sock.sendMessage(sender, { 
+          text: '✦ Here is your image:' 
+        }, { edit: loadingMsg.key });
+
         await sock.sendMessage(sender, {
           image: { url: imageUrl },
-          caption: `✦ NSFW Content\n◉ Source: PxNSFW\n◉ Powered by Sila Tech`
-        });
-        
-        // Delete loading message
-        await sock.sendMessage(sender, { 
-          text: '✅',
-          edit: loadingMsg.key
-        });
-        
+          caption: '✦ Sila Tech NSFW Module'
+        }, { quoted: msg });
+
       } else {
-        throw new Error('Invalid response from API');
+        throw new Error('Invalid or empty response from API');
       }
-      
+
     } catch (error) {
-      console.error('[nsfw]', error);
+      console.error('[nsfwass]', error.response?.data || error.message);
       await sock.sendMessage(sender, { 
-        text: `✖ Error: ${error.message || 'Failed to fetch NSFW content'}` 
+        text: `✖ Error: ${error.response?.data?.message || error.message || 'Failed to fetch image'}` 
       });
     }
   }
