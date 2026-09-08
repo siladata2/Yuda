@@ -1,7 +1,7 @@
 import { ButtonV2 } from 'baileys';
 
 export default {
-  name: 'h',
+  name: 'sila',
   alias: ['help2', 'commands'],
   description: 'Interactive menu with buttons',
   category: 'general',
@@ -11,18 +11,18 @@ export default {
     const sender = msg.key.remoteJid;
     
     await new ButtonV2(sock)
-      .setBody('Halo dunia')
-      .setFooter('Footer Message')
+      .setBody('Tafuta Hela')
+      .setFooter('𝐒𝐢𝐥𝐚 𝐓𝐞𝐜𝐡🤓')
       .setThumbnail(
-        'https://cdn.ornzora.eu.cc/4d2905ce-3707-4ec0-998a-68a3d851629f-FIORA.jpg'
+        'https://i.ibb.co/674988wP/silatech.jpg'
       )
       .addRawButton({
-        buttonText: { displayText: '📡 Menu' },
-        buttonId: 'Nixel',
+        buttonText: { displayText: 'Menu' },
+        buttonId: 'menu',
         type: 1,
         nativeFlowInfo: {
           name: 'single_select',
-          paramsJson: "{\"title\":\"Click Here!\",\"sections\":[{\"title\":\"Fiora Sylvie\",\"highlight_label\":\"\",\"rows\":[{\"header\":\"\",\"title\":\"Nixel\",\"description\":\"\",\"id\":\"\"}]}]}"
+          paramsJson: "{\"title\":\"Click Here!\",\"sections\":[{\"title\":\"Sila Sylvie\",\"highlight_label\":\"\",\"rows\":[{\"header\":\"\",\"title\":\"Silatech\",\"description\":\"\",\"id\":\"\"}]}]}"
         }
       })
       .send(sender);
