@@ -1,8 +1,7 @@
-import { randomUUID } from 'crypto';
-import { downloadContentFromMessage } from '@itsliaaa/baileys';
+import { ButtonV2 } from 'baileys';
 
 export default {
-  name: 'h',
+  name: 'menu',
   alias: ['help', 'commands'],
   description: 'Interactive menu with buttons',
   category: 'general',
@@ -11,7 +10,7 @@ export default {
   async execute(sock, msg, args, prefix, options) {
     const sender = msg.key.remoteJid;
     
-    await new Button(sock)
+    await new ButtonV2(sock)
       .setBody('Halo dunia')
       .setFooter('Footer Message')
       .setThumbnail(
