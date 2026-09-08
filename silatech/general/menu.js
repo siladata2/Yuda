@@ -41,12 +41,12 @@ export default {
     Object.keys(categories).forEach((cat) => {
       const cmdList = categories[cat].map(c => `• \`${prefix}${c}\``).join('\n');
       richSubmessages.push({
-        text: `📂 *${cat} COMMANDS*\n${cmdList}`
+        text: `📂 *${cat}*\n${cmdList}`
       });
     });
 
     richSubmessages.push({
-      text: `💡 *Tip:* Tumia \`${prefix}help <command_name>\` kupata maelezo ya command husika.`
+      text: `💡 *Tip:* Kama ujui kutumia acha👊`
     });
 
     // 4. Kutuma Menu
