@@ -22,7 +22,7 @@ export default {
         type: 1,
         nativeFlowInfo: {
           name: 'single_select',
-          paramsJson: "{\"title\":\"Click Here!\",\"sections\":[{\"title\":\"Sila Sylvie\",\"highlight_label\":\"\",\"rows\":[{\"header\":\"\",\"title\":\"Silatech\",\"description\":\"\",\"id\":\"\"}]}]}"
+          paramsJson: "{\"title\":\"Click Here!\",\"sections\":[{\"title\":\"Sila Sylvie\",\"highlight_label\":\"\",\"rows\":[{\"header\":\"\",\"title\":\"menu\",\"description\":\"\",\"id\":\"\"}]}]}"
         }
       })
       .send(sender);
