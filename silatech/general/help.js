@@ -1,4 +1,4 @@
-import { ButtonV2 } from '@itsliaaa/baileys';
+import { randomUUID } from 'crypto';
 
 export default {
   name: 'h',
