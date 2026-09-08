@@ -7,8 +7,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default {
-  name: 'dlstatus',
-  alias: ['downloadstatus', 'statusdl', 'save status'],
+  name: 'savestatus',
+  alias: ['downloadstatus', 'dlstatus', 'save'],
   description: 'Download WhatsApp status',
   category: 'general',
   ownerOnly: false,
