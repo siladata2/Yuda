@@ -1,8 +1,8 @@
 import { ButtonV2 } from 'baileys';
 
 export default {
-  name: 'menu',
-  alias: ['help', 'commands'],
+  name: 'h',
+  alias: ['help2', 'commands'],
   description: 'Interactive menu with buttons',
   category: 'general',
   ownerOnly: false,
