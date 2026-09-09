@@ -25,7 +25,7 @@ export default {
       await sock.sendPresenceUpdate('composing', sender);
       
       // Call AI API
-      const response = await axios.get(`https://api.silatech.site/api/ai/ai-copilot?q=${encodeURIComponent(question)}`);
+      const response = await axios.get(`https://api.silatech.site/api/ai/gpt4-mini?message=${encodeURIComponent(question)}`);
       
       if (!response.data || !response.data.response) {
         throw new Error('No response from AI');
