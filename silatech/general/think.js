@@ -2,9 +2,9 @@ import { AIRich } from 'baileys';
 import axios from 'axios';
 
 export default {
-  name: 'ai',
-  alias: ['ask', 'chat', 'gpt', 'copilot', 'silaai'],
-  description: 'AI GPT-4 Mini with rich responses',
+  name: 'gpt',
+  alias: ['ask', 'chat', 'gpt', 'copilot', 'gpt4'],
+  description: 'AI with rich responses',
   category: 'general',
   ownerOnly: false,
   
@@ -13,7 +13,7 @@ export default {
     
     if (args.length === 0) {
       await sock.sendMessage(sender, {
-        text: `✦ AI GPT-4 Mini\n◉ Usage: ${prefix}ai [question]\n◉ Example: ${prefix}ai What is WhatsApp?`
+        text: `✦ Gpt\n◉ Usage: ${prefix}gpt [question]\n◉ Example: ${prefix}gpt What is WhatsApp?`
       });
       return;
     }
@@ -42,16 +42,15 @@ export default {
                      aiResponse.includes('console.log') ||
                      aiResponse.includes('<!DOCTYPE') ||
                      aiResponse.includes('<html>') ||
-                     aiResponse.includes('<style>');
+                     aiResponse.includes('<style>') ||
+                     aiResponse.includes('def ') ||
+                     aiResponse.includes('npm ');
       
       const isTable = aiResponse.includes('|') && aiResponse.includes('---');
       const isList = aiResponse.includes('\n- ') || aiResponse.includes('\n• ') || aiResponse.includes('\n* ');
       
       // Build rich response
       const rich = new AIRich(sock);
-      
-      // Add header
-      rich.addText(`✦ AI GPT-4 Mini\n`);
       
       // Handle different response types
       if (isCode) {
@@ -76,11 +75,9 @@ export default {
             rich.addText(textAfter.trim());
           }
         } else {
-          // If no code blocks but contains code-like content, send as text
           rich.addText(aiResponse);
         }
       } else if (isTable) {
-        // Parse table
         const lines = aiResponse.split('\n').filter(line => line.trim());
         const tableData = [];
         
@@ -93,7 +90,6 @@ export default {
           }
         }
         
-        // Add text before table if any
         const textBefore = aiResponse.split(/\n\|/)[0];
         if (textBefore && textBefore.trim()) {
           rich.addText(textBefore.trim());
@@ -105,7 +101,6 @@ export default {
           rich.addText(aiResponse);
         }
         
-        // Add text after table if any
         const tableEnd = aiResponse.split(/\|\n/);
         if (tableEnd.length > 1) {
           const textAfter = tableEnd.slice(1).join('\n').trim();
@@ -119,6 +114,9 @@ export default {
         rich.addText(aiResponse);
       }
       
+      // Add footer only
+      rich.setFooter('✦ Powered By Sila Tech');
+      
       // Send rich response
       await rich.send(sender);
       
@@ -126,7 +124,7 @@ export default {
       console.error('[ai]', error);
       
       await sock.sendMessage(sender, { 
-        text: `✖ AI Error: ${error.message || 'Service unavailable'}` 
+        text: `✖ Error: ${error.message || 'Service unavailable'}` 
       });
     }
   }
