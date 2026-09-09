@@ -32,9 +32,6 @@ export default {
       }
       
       const aiResponse = response.data.answer;
-      const sessionId = response.data.sessionId || 'N/A';
-      const model = response.data.model || 'gpt-4o-mini';
-      const messageCount = response.data.messageCount || 0;
       
       // Detect response type
       const isCode = aiResponse.includes('```') || 
@@ -42,21 +39,26 @@ export default {
                      aiResponse.includes('const') || 
                      aiResponse.includes('import') ||
                      aiResponse.includes('class') ||
-                     aiResponse.includes('console.log');
+                     aiResponse.includes('console.log') ||
+                     aiResponse.includes('<!DOCTYPE') ||
+                     aiResponse.includes('<html>') ||
+                     aiResponse.includes('<style>');
       
       const isTable = aiResponse.includes('|') && aiResponse.includes('---');
+      const isList = aiResponse.includes('\n- ') || aiResponse.includes('\n• ') || aiResponse.includes('\n* ');
       
       // Build rich response
       const rich = new AIRich(sock);
       
       // Add header
-      rich.addText(`✦ AI GPT-4 Mini\n◉ Model: ${model}\n◉ Session: ${sessionId.substring(0, 8)}...\n\n`);
+      rich.addText(`✦ AI GPT-4 Mini\n`);
       
       // Handle different response types
       if (isCode) {
         const codeBlocks = aiResponse.match(/```(\w+)?\n([\s\S]*?)```/g);
         
         if (codeBlocks) {
+          // Add text before first code block
           const textBefore = aiResponse.split(/```(\w+)?\n/)[0];
           if (textBefore && textBefore.trim()) {
             rich.addText(textBefore.trim());
@@ -74,9 +76,11 @@ export default {
             rich.addText(textAfter.trim());
           }
         } else {
+          // If no code blocks but contains code-like content, send as text
           rich.addText(aiResponse);
         }
       } else if (isTable) {
+        // Parse table
         const lines = aiResponse.split('\n').filter(line => line.trim());
         const tableData = [];
         
@@ -89,24 +93,31 @@ export default {
           }
         }
         
+        // Add text before table if any
+        const textBefore = aiResponse.split(/\n\|/)[0];
+        if (textBefore && textBefore.trim()) {
+          rich.addText(textBefore.trim());
+        }
+        
         if (tableData.length > 0) {
           rich.addTable(tableData);
         } else {
           rich.addText(aiResponse);
         }
+        
+        // Add text after table if any
+        const tableEnd = aiResponse.split(/\|\n/);
+        if (tableEnd.length > 1) {
+          const textAfter = tableEnd.slice(1).join('\n').trim();
+          if (textAfter) {
+            rich.addText(textAfter);
+          }
+        }
+      } else if (isList) {
+        rich.addText(aiResponse);
       } else {
         rich.addText(aiResponse);
       }
-      
-      // Add suggestions
-      rich.addSuggest([
-        `${prefix}ai ${question}`,
-        `${prefix}help`,
-        `${prefix}menu`
-      ]);
-      
-      // Add footer
-      rich.setFooter(`✦ Powered by Sila Tech AI • ${messageCount} messages`);
       
       // Send rich response
       await rich.send(sender);
