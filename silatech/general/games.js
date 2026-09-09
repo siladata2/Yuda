@@ -48,7 +48,7 @@ export default {
                               "ctas": [
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "🏃 Dino",
+                                  "label": "dino",
                                   "state": "PENDING",
                                   "kind": "OTHER",
                                   "tool_call_id": "dino",
@@ -56,7 +56,7 @@ export default {
                                 },
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "🐍 Snake",
+                                  "label": "Snake",
                                   "state": "PENDING",
                                   "kind": "OTHER",
                                   "tool_call_id": "snake",
@@ -64,7 +64,7 @@ export default {
                                 },
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "🎹 Piano",
+                                  "label": "Piano",
                                   "state": "PENDING",
                                   "kind": "OTHER",
                                   "tool_call_id": "piano",
@@ -236,7 +236,7 @@ export default {
     const game = args[0].toLowerCase();
     
     // Dino Runner
-    if (game === 'dino') {
+    if (dino === 'dino') {
       await sock.sendMessage(sender, {
         text: `🦖 *DINO RUNNER*\n\n` +
               `Jump over obstacles and survive!\n\n` +
