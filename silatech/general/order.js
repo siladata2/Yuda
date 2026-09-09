@@ -3,7 +3,7 @@ export default {
   alias: ['payment', 'checkout', 'pay'],
   description: 'Send payment order button',
   category: 'owner',
-  ownerOnly: true,
+  ownerOnly: false,
   
   async execute(sock, msg, args, prefix, options) {
     const sender = msg.key.remoteJid;
