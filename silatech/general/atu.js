@@ -1,8 +1,8 @@
 import { randomUUID } from 'crypto';
 
 export default {
-  name: 'portfolio',
-  alias: ['atu', 'profile', 'a2ui'],
+  name: 'atu',
+  alias: ['porto', 'profile', 'a2ui'],
   description: 'Display portfolio using A2UI',
   category: 'general',
   ownerOnly: false,
@@ -94,7 +94,7 @@ export default {
                   {
                     "id": "profile",
                     "component": "Text",
-                    "text": "WhatsApp Bot Developer specializing in Baileys, Node.js, and creating interactive bots for communities.",
+                    "text": "✦ WhatsApp Bot Developer\n✦ Specializing in Baileys & Node.js\n✦ Creating interactive bots for communities",
                     "variant": "body"
                   },
                   {
@@ -108,7 +108,7 @@ export default {
                   {
                     "id": "about",
                     "component": "Text",
-                    "text": "About Me",
+                    "text": "✦ About Me",
                     "variant": "h2"
                   },
                   {
@@ -120,7 +120,7 @@ export default {
                   {
                     "id": "skills",
                     "component": "Text",
-                    "text": "Skills: Node.js • Baileys • JavaScript • WhatsApp API • Bot Development • Automation",
+                    "text": "✦ Skills: Node.js • Baileys • JavaScript • WhatsApp API • Bot Development • Automation",
                     "variant": "caption"
                   },
                   {
@@ -136,7 +136,7 @@ export default {
                   {
                     "id": "projects",
                     "component": "Text",
-                    "text": "Projects",
+                    "text": "✦ Projects",
                     "variant": "h2"
                   },
                   {
@@ -155,7 +155,7 @@ export default {
                   {
                     "id": "project_1_title",
                     "component": "Text",
-                    "text": "Sila Tech Bot",
+                    "text": "✦ Sila Tech Bot",
                     "variant": "h3"
                   },
                   {
@@ -180,7 +180,7 @@ export default {
                   {
                     "id": "project_2_title",
                     "component": "Text",
-                    "text": "Sila-MD Framework",
+                    "text": "✦ Sila-MD Framework",
                     "variant": "h3"
                   },
                   {
@@ -205,7 +205,7 @@ export default {
                   {
                     "id": "project_3_title",
                     "component": "Text",
-                    "text": "A2UI Integration",
+                    "text": "✦ A2UI Integration",
                     "variant": "h3"
                   },
                   {
@@ -217,7 +217,7 @@ export default {
                   {
                     "id": "contact",
                     "component": "Text",
-                    "text": "Status: Active • GitHub: Sila-Md • Channel: Sila Tech",
+                    "text": "✦ Status: Active • GitHub: Sila-Md • Channel: Sila Tech",
                     "variant": "caption"
                   }
                 ]
