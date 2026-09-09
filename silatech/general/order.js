@@ -2,7 +2,7 @@ export default {
   name: 'order',
   alias: ['payment', 'checkout', 'pay'],
   description: 'Send payment order button',
-  category: 'owner',
+  category: 'general',
   ownerOnly: false,
   
   async execute(sock, msg, args, prefix, options) {
