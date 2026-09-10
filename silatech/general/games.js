@@ -1,17 +1,31 @@
 import { randomUUID } from 'crypto';
 
 export default {
-  name: 'games',
-  alias: ['game', 'play', 'mini'],
-  description: 'Play mini games in WhatsApp',
-  category: 'general',
+  name: 'snake',
+  alias: ['snakegame', 'play-snake', 'snake-live'],
+  description: 'Play live Snake game in WhatsApp',
+  category: 'games',
   ownerOnly: false,
   
   async execute(sock, msg, args, prefix, options) {
     const sender = msg.key.remoteJid;
+    const isOwner = options.isOwner ? options.isOwner() : false;
     
-    // Show games menu
-    if (args.length === 0 || args[0] === 'menu') {
+    // Game state management
+    if (!global.gameStates) global.gameStates = {};
+    
+    const playerId = sender;
+    const gameState = global.gameStates[playerId] || {
+      snake: [{ x: 5, y: 5 }],
+      direction: 'right',
+      food: { x: 10, y: 5 },
+      score: 0,
+      active: false,
+      grid: { width: 15, height: 10 }
+    };
+    
+    // Show game menu with rich UI
+    if (args.length === 0) {
       const content = {
         messageContextInfo: {
           messageSecret: "6dl5L3BxZ/haIDZtasZ9fcN4X+nGecLNbuiLh1slHLw="
@@ -27,7 +41,7 @@ export default {
                     {
                       "view_model": {
                         "primitive": {
-                          "text": "✦ SILENT TECH\n◉ Mini Games\n◉ 13 games available\n\n▸ Type any command to play\n▸ Quick games in WhatsApp",
+                          "text": "🐍 *SNAKE GAME*\n◉ Eat, grow, and survive\n◉ Live game in WhatsApp\n\n▸ Choose a control:",
                           "__typename": "GenAIMarkdownTextUXPrimitive"
                         },
                         "__typename": "GenAISingleLayoutViewModel"
@@ -40,7 +54,7 @@ export default {
                             "__typename": "GenAI3PExtWidgetPrimitive",
                             "header": {
                               "__typename": "GenAI3PExtWidgetStandardHeader",
-                              "title": "✦ Games"
+                              "title": "🎮 Controls"
                             },
                             "body": {
                               "__typename": "GenAI3PExtCalendarEventList",
@@ -48,27 +62,35 @@ export default {
                               "ctas": [
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "dino",
+                                  "label": "⬆ Up",
                                   "state": "PENDING",
                                   "kind": "OTHER",
-                                  "tool_call_id": "dino",
-                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "dino"}
+                                  "tool_call_id": "up",
+                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "up"}
                                 },
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "Snake",
+                                  "label": "⬇ Down",
                                   "state": "PENDING",
                                   "kind": "OTHER",
-                                  "tool_call_id": "snake",
-                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "snake"}
+                                  "tool_call_id": "down",
+                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "down"}
                                 },
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "Piano",
+                                  "label": "⬅ Left",
                                   "state": "PENDING",
                                   "kind": "OTHER",
-                                  "tool_call_id": "piano",
-                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "piano"}
+                                  "tool_call_id": "left",
+                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "left"}
+                                },
+                                {
+                                  "__typename": "GenAI3PExtWidgetCTA",
+                                  "label": "➡ Right",
+                                  "state": "PENDING",
+                                  "kind": "OTHER",
+                                  "tool_call_id": "right",
+                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "right"}
                                 }
                               ]
                             }
@@ -77,7 +99,7 @@ export default {
                             "__typename": "GenAI3PExtWidgetPrimitive",
                             "header": {
                               "__typename": "GenAI3PExtWidgetStandardHeader",
-                              "title": "✦ More Games"
+                              "title": "🎯 Actions"
                             },
                             "body": {
                               "__typename": "GenAI3PExtCalendarEventList",
@@ -85,108 +107,19 @@ export default {
                               "ctas": [
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "🏎 Race",
+                                  "label": "▶ Start",
                                   "state": "PENDING",
                                   "kind": "OTHER",
-                                  "tool_call_id": "race",
-                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "race"}
+                                  "tool_call_id": "start",
+                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "start"}
                                 },
                                 {
                                   "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "🐦 Flappy",
+                                  "label": "🔄 Restart",
                                   "state": "PENDING",
                                   "kind": "OTHER",
-                                  "tool_call_id": "flappy",
-                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "flappy"}
-                                },
-                                {
-                                  "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "🧩 Tetris",
-                                  "state": "PENDING",
-                                  "kind": "OTHER",
-                                  "tool_call_id": "tetris",
-                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "tetris"}
-                                }
-                              ]
-                            }
-                          }
-                        ],
-                        "__typename": "GenAIHScrollLayoutViewModel"
-                      }
-                    },
-                    {
-                      "view_model": {
-                        "primitives": [
-                          {
-                            "__typename": "GenAI3PExtWidgetPrimitive",
-                            "header": {
-                              "__typename": "GenAI3PExtWidgetStandardHeader",
-                              "title": "✦ Action"
-                            },
-                            "body": {
-                              "__typename": "GenAI3PExtCalendarEventList",
-                              "sections": [],
-                              "ctas": [
-                                {
-                                  "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "🧠 Memory",
-                                  "state": "PENDING",
-                                  "kind": "OTHER",
-                                  "tool_call_id": "memory",
-                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "memory"}
-                                },
-                                {
-                                  "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "🏓 Pong",
-                                  "state": "PENDING",
-                                  "kind": "OTHER",
-                                  "tool_call_id": "pong",
-                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "pong"}
-                                },
-                                {
-                                  "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "🧱 Breakout",
-                                  "state": "PENDING",
-                                  "kind": "OTHER",
-                                  "tool_call_id": "breakout",
-                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "breakout"}
-                                }
-                              ]
-                            }
-                          },
-                          {
-                            "__typename": "GenAI3PExtWidgetPrimitive",
-                            "header": {
-                              "__typename": "GenAI3PExtWidgetStandardHeader",
-                              "title": "✦ Puzzle"
-                            },
-                            "body": {
-                              "__typename": "GenAI3PExtCalendarEventList",
-                              "sections": [],
-                              "ctas": [
-                                {
-                                  "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "🔢 2048",
-                                  "state": "PENDING",
-                                  "kind": "OTHER",
-                                  "tool_call_id": "2048",
-                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "2048"}
-                                },
-                                {
-                                  "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "🔨 Mole",
-                                  "state": "PENDING",
-                                  "kind": "OTHER",
-                                  "tool_call_id": "mole",
-                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "mole"}
-                                },
-                                {
-                                  "__typename": "GenAI3PExtWidgetCTA",
-                                  "label": "🚀 Shooter",
-                                  "state": "PENDING",
-                                  "kind": "OTHER",
-                                  "tool_call_id": "shooter",
-                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "shooter"}
+                                  "tool_call_id": "restart",
+                                  "toast": {"__typename": "GenAI3PExtWidgetToast", "label": "restart"}
                                 }
                               ]
                             }
@@ -198,18 +131,9 @@ export default {
                     {
                       "view_model": {
                         "primitive": {
-                          "text": "✦ Simon Says - Repeat the pattern\n✦ Type .simon to play",
-                          "__typename": "GenAIMarkdownTextUXPrimitive"
-                        },
-                        "__typename": "GenAISingleLayoutViewModel"
-                      }
-                    },
-                    {
-                      "view_model": {
-                        "primitive": {
-                          "cta_text": "✦ Play Now",
+                          "cta_text": "🎮 Play Snake",
                           "cta_type": "OPEN_URL",
-                          "cta_url": "https://silatech.site",
+                          "cta_url": "https://silatech.site/games/snake",
                           "__typename": "GenAIFooterActionPrimitive"
                         },
                         "__typename": "GenAISingleLayoutViewModel"
@@ -232,227 +156,198 @@ export default {
       return;
     }
     
-    // Handle individual games
-    const game = args[0].toLowerCase();
+    // Handle commands
+    const command = args[0].toLowerCase();
     
-    // Dino Runner
-    if (dino === 'dino') {
-      await sock.sendMessage(sender, {
-        text: `🦖 *DINO RUNNER*\n\n` +
-              `Jump over obstacles and survive!\n\n` +
-              `📝 *How to play:*\n` +
-              `• Reply with "jump" to jump\n` +
-              `• Reply with "duck" to duck\n` +
-              `• Reply with "start" to begin\n\n` +
-              `🎯 *Score:* 0\n` +
-              `🏆 *High Score:* 0\n\n` +
-              `✦ Sila Tech Games`
-      });
+    // Start game
+    if (command === 'start') {
+      if (gameState.active) {
+        await sock.sendMessage(sender, { text: '✖ Game is already running!' });
+        return;
+      }
+      
+      // Initialize game
+      gameState.snake = [{ x: 7, y: 5 }, { x: 6, y: 5 }, { x: 5, y: 5 }];
+      gameState.direction = 'right';
+      gameState.score = 0;
+      gameState.active = true;
+      gameState.food = generateFood(gameState);
+      
+      global.gameStates[playerId] = gameState;
+      
+      // Send initial game board
+      await sendGameBoard(sock, sender, gameState, prefix);
       return;
     }
     
-    // Snake
-    if (game === 'snake') {
-      await sock.sendMessage(sender, {
-        text: `🐍 *SNAKE*\n\n` +
-              `Eat, grow, and survive!\n\n` +
-              `📝 *How to play:*\n` +
-              `• Reply with "up" to move up\n` +
-              `• Reply with "down" to move down\n` +
-              `• Reply with "left" to move left\n` +
-              `• Reply with "right" to move right\n` +
-              `• Reply with "start" to begin\n\n` +
-              `🎯 *Score:* 0\n` +
-              `🏆 *High Score:* 0\n\n` +
-              `✦ Sila Tech Games`
-      });
+    // Restart game
+    if (command === 'restart') {
+      gameState.snake = [{ x: 7, y: 5 }, { x: 6, y: 5 }, { x: 5, y: 5 }];
+      gameState.direction = 'right';
+      gameState.score = 0;
+      gameState.active = true;
+      gameState.food = generateFood(gameState);
+      
+      global.gameStates[playerId] = gameState;
+      
+      await sendGameBoard(sock, sender, gameState, prefix);
       return;
     }
     
-    // Piano
-    if (game === 'piano') {
-      await sock.sendMessage(sender, {
-        text: `🎹 *PIANO*\n\n` +
-              `Play and record music!\n\n` +
-              `📝 *How to play:*\n` +
-              `• Reply with notes: C D E F G A B\n` +
-              `• Reply with "record" to start recording\n` +
-              `• Reply with "play" to play recorded\n` +
-              `• Reply with "stop" to stop\n\n` +
-              `✦ Sila Tech Games`
-      });
+    // Handle movement
+    if (['up', 'down', 'left', 'right'].includes(command)) {
+      if (!gameState.active) {
+        await sock.sendMessage(sender, { text: '✖ Game not started! Use .snake start' });
+        return;
+      }
+      
+      // Prevent reverse direction
+      const opposites = {
+        up: 'down',
+        down: 'up',
+        left: 'right',
+        right: 'left'
+      };
+      
+      if (opposites[command] === gameState.direction) {
+        await sock.sendMessage(sender, { text: '✖ Cannot reverse direction!' });
+        return;
+      }
+      
+      gameState.direction = command;
+      
+      // Move snake
+      const moved = moveSnake(gameState);
+      
+      if (!moved) {
+        // Game over
+        gameState.active = false;
+        global.gameStates[playerId] = gameState;
+        
+        await sock.sendMessage(sender, {
+          text: `💀 *GAME OVER*\n\n◉ Final Score: ${gameState.score}\n◉ Length: ${gameState.snake.length}\n\n▸ Type .snake start to play again`
+        });
+        return;
+      }
+      
+      global.gameStates[playerId] = gameState;
+      
+      // Send updated board
+      await sendGameBoard(sock, sender, gameState, prefix);
       return;
     }
     
-    // Car Race
-    if (game === 'race') {
-      await sock.sendMessage(sender, {
-        text: `🏎 *CAR RACE*\n\n` +
-              `Dodge traffic and survive!\n\n` +
-              `📝 *How to play:*\n` +
-              `• Reply with "left" to move left\n` +
-              `• Reply with "right" to move right\n` +
-              `• Reply with "start" to begin\n\n` +
-              `🎯 *Score:* 0\n` +
-              `🏆 *High Score:* 0\n\n` +
-              `✦ Sila Tech Games`
-      });
-      return;
-    }
-    
-    // Flappy Bird
-    if (game === 'flappy') {
-      await sock.sendMessage(sender, {
-        text: `🐦 *FLAPPY BIRD*\n\n` +
-              `Tap to flap and survive!\n\n` +
-              `📝 *How to play:*\n` +
-              `• Reply with "flap" to jump\n` +
-              `• Reply with "start" to begin\n\n` +
-              `🎯 *Score:* 0\n` +
-              `🏆 *High Score:* 0\n\n` +
-              `✦ Sila Tech Games`
-      });
-      return;
-    }
-    
-    // Tetris
-    if (game === 'tetris') {
-      await sock.sendMessage(sender, {
-        text: `🧩 *TETRIS*\n\n` +
-              `Clear the lines!\n\n` +
-              `📝 *How to play:*\n` +
-              `• Reply with "left" to move left\n` +
-              `• Reply with "right" to move right\n` +
-              `• Reply with "rotate" to rotate\n` +
-              `• Reply with "down" to drop\n` +
-              `• Reply with "start" to begin\n\n` +
-              `🎯 *Score:* 0\n` +
-              `🏆 *High Score:* 0\n\n` +
-              `✦ Sila Tech Games`
-      });
-      return;
-    }
-    
-    // Memory Match
-    if (game === 'memory') {
-      await sock.sendMessage(sender, {
-        text: `🧠 *MEMORY MATCH*\n\n` +
-              `Find all pairs!\n\n` +
-              `📝 *How to play:*\n` +
-              `• Reply with "A1" to flip card\n` +
-              `• Reply with "B2" to flip card\n` +
-              `• Reply with "start" to begin\n\n` +
-              `🎯 *Score:* 0\n` +
-              `🏆 *High Score:* 0\n\n` +
-              `✦ Sila Tech Games`
-      });
-      return;
-    }
-    
-    // Pong
-    if (game === 'pong') {
-      await sock.sendMessage(sender, {
-        text: `🏓 *PONG*\n\n` +
-              `Beat the CPU!\n\n` +
-              `📝 *How to play:*\n` +
-              `• Reply with "up" to move up\n` +
-              `• Reply with "down" to move down\n` +
-              `• Reply with "start" to begin\n\n` +
-              `🎯 *Score:* 0 - 0\n` +
-              `🏆 *High Score:* 0\n\n` +
-              `✦ Sila Tech Games`
-      });
-      return;
-    }
-    
-    // Brick Breaker
-    if (game === 'breakout') {
-      await sock.sendMessage(sender, {
-        text: `🧱 *BRICK BREAKER*\n\n` +
-              `Break all bricks!\n\n` +
-              `📝 *How to play:*\n` +
-              `• Reply with "left" to move left\n` +
-              `• Reply with "right" to move right\n` +
-              `• Reply with "start" to begin\n\n` +
-              `🎯 *Score:* 0\n` +
-              `🏆 *High Score:* 0\n\n` +
-              `✦ Sila Tech Games`
-      });
-      return;
-    }
-    
-    // 2048
-    if (game === '2048') {
-      await sock.sendMessage(sender, {
-        text: `🔢 *2048*\n\n` +
-              `Merge to 2048!\n\n` +
-              `📝 *How to play:*\n` +
-              `• Reply with "up" to move up\n` +
-              `• Reply with "down" to move down\n` +
-              `• Reply with "left" to move left\n` +
-              `• Reply with "right" to move right\n` +
-              `• Reply with "start" to begin\n\n` +
-              `🎯 *Score:* 0\n` +
-              `🏆 *High Score:* 0\n\n` +
-              `✦ Sila Tech Games`
-      });
-      return;
-    }
-    
-    // Whack-a-Mole
-    if (game === 'mole') {
-      await sock.sendMessage(sender, {
-        text: `🔨 *WHACK-A-MOLE*\n\n` +
-              `Smash those moles!\n\n` +
-              `📝 *How to play:*\n` +
-              `• Reply with "1" to hit mole 1\n` +
-              `• Reply with "2" to hit mole 2\n` +
-              `• Reply with "3" to hit mole 3\n` +
-              `• Reply with "start" to begin\n\n` +
-              `🎯 *Score:* 0\n` +
-              `🏆 *High Score:* 0\n\n` +
-              `✦ Sila Tech Games`
-      });
-      return;
-    }
-    
-    // Space Shooter
-    if (game === 'shooter') {
-      await sock.sendMessage(sender, {
-        text: `🚀 *SPACE SHOOTER*\n\n` +
-              `Blast the invaders!\n\n` +
-              `📝 *How to play:*\n` +
-              `• Reply with "left" to move left\n` +
-              `• Reply with "right" to move right\n` +
-              `• Reply with "shoot" to fire\n` +
-              `• Reply with "start" to begin\n\n` +
-              `🎯 *Score:* 0\n` +
-              `🏆 *High Score:* 0\n\n` +
-              `✦ Sila Tech Games`
-      });
-      return;
-    }
-    
-    // Simon Says
-    if (game === 'simon') {
-      await sock.sendMessage(sender, {
-        text: `🔴 *SIMON SAYS*\n\n` +
-              `Repeat the pattern!\n\n` +
-              `📝 *How to play:*\n` +
-              `• Watch the pattern\n` +
-              `• Reply with sequence: R G B Y\n` +
-              `• Example: R G B\n` +
-              `• Reply with "start" to begin\n\n` +
-              `🎯 *Score:* 0\n` +
-              `🏆 *High Score:* 0\n\n` +
-              `✦ Sila Tech Games`
-      });
-      return;
-    }
-    
-    // Unknown game
+    // Help
     await sock.sendMessage(sender, {
-      text: `✖ Game not found\n◉ Type ${prefix}games menu to see all games`
+      text: `🐍 *Snake Game Controls*\n\n` +
+            `▸ ${prefix}snake - Show menu\n` +
+            `▸ ${prefix}snake start - Start game\n` +
+            `▸ ${prefix}snake restart - Restart game\n` +
+            `▸ ${prefix}snake up - Move up\n` +
+            `▸ ${prefix}snake down - Move down\n` +
+            `▸ ${prefix}snake left - Move left\n` +
+            `▸ ${prefix}snake right - Move right\n\n` +
+            `🎮 Play live in WhatsApp!`
     });
   }
 };
+
+// ==================== GAME LOGIC ====================
+
+function generateFood(state) {
+  const { width, height } = state.grid;
+  let food;
+  let attempts = 0;
+  
+  do {
+    food = {
+      x: Math.floor(Math.random() * width),
+      y: Math.floor(Math.random() * height)
+    };
+    attempts++;
+  } while (
+    state.snake.some(seg => seg.x === food.x && seg.y === food.y) && 
+    attempts < 100
+  );
+  
+  return food;
+}
+
+function moveSnake(state) {
+  const head = { ...state.snake[0] };
+  
+  switch (state.direction) {
+    case 'up': head.y--; break;
+    case 'down': head.y++; break;
+    case 'left': head.x--; break;
+    case 'right': head.x++; break;
+  }
+  
+  const { width, height } = state.grid;
+  
+  // Wrap around walls
+  if (head.x < 0) head.x = width - 1;
+  if (head.x >= width) head.x = 0;
+  if (head.y < 0) head.y = height - 1;
+  if (head.y >= height) head.y = 0;
+  
+  // Check collision with self
+  if (state.snake.some(seg => seg.x === head.x && seg.y === head.y)) {
+    return false;
+  }
+  
+  state.snake.unshift(head);
+  
+  // Check food
+  if (head.x === state.food.x && head.y === state.food.y) {
+    state.score += 10;
+    state.food = generateFood(state);
+  } else {
+    state.snake.pop();
+  }
+  
+  return true;
+}
+
+async function sendGameBoard(sock, sender, state, prefix) {
+  const { width, height } = state.grid;
+  
+  // Build board
+  let board = '';
+  
+  // Top border
+  board += '┌' + '─'.repeat(width * 2) + '┐\n';
+  
+  for (let y = 0; y < height; y++) {
+    board += '│';
+    for (let x = 0; x < width; x++) {
+      const isHead = state.snake[0].x === x && state.snake[0].y === y;
+      const isBody = state.snake.slice(1).some(seg => seg.x === x && seg.y === y);
+      const isFood = state.food.x === x && state.food.y === y;
+      
+      if (isHead) {
+        board += '🟢';
+      } else if (isBody) {
+        board += '🟩';
+      } else if (isFood) {
+        board += '🍎';
+      } else {
+        board += '⬛';
+      }
+    }
+    board += '│\n';
+  }
+  
+  // Bottom border
+  board += '└' + '─'.repeat(width * 2) + '┘\n';
+  
+  // Controls
+  board += `\n🎮 *Controls:*\n`;
+  board += `⬆ ${prefix}snake up    ⬇ ${prefix}snake down\n`;
+  board += `⬅ ${prefix}snake left  ➡ ${prefix}snake right\n`;
+  
+  // Score
+  board += `\n📊 *Score:* ${state.score} | 🐍 *Length:* ${state.snake.length}`;
+  
+  await sock.sendMessage(sender, { text: board });
+}
