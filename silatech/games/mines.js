@@ -88,7 +88,7 @@ html, body { background: var(--bg-dark); color: var(--text-main); font-family: v
     </div>
 
     <button class="action-btn" id="main-btn">START GAME</button>
-    <div class="msg" id="msg">Weka dau kisha bonyeza Start!</div>
+    <div class="msg" id="msg">Set your bet and click Start!</div>
 
     <div class="footer">
       <button class="footer__reset" id="reset-bal">Reset Wallet (TSh 5,000)</button>
@@ -134,12 +134,12 @@ html, body { background: var(--bg-dark); color: var(--text-main); font-family: v
     mineCount = parseInt(minesSelect.value);
 
     if (betAmount < 100) {
-      msgEl.textContent = 'Kiwango cha chini ku-bet ni TSh 100!';
+      msgEl.textContent = 'Minimum bet amount is TSh 100!';
       msgEl.style.color = 'var(--danger)';
       return;
     }
     if (betAmount > balance) {
-      msgEl.textContent = 'Huna salio la kutosha kwenye wallet!';
+      msgEl.textContent = 'Insufficient balance in your wallet!';
       msgEl.style.color = 'var(--danger)';
       return;
     }
@@ -168,12 +168,12 @@ html, body { background: var(--bg-dark); color: var(--text-main); font-family: v
 
     multEl.textContent = '1.00x';
     winAmtEl.textContent = 'TSh ' + betAmount;
-    msgEl.textContent = 'Chagua kadi ili kupata Almasi!';
+    msgEl.textContent = 'Pick a tile to find Gems!';
     msgEl.style.color = 'var(--accent-gold)';
 
     mainBtn.textContent = 'TAKE CASH (CASHOUT)';
     mainBtn.className = 'action-btn cashout';
-    mainBtn.disabled = true; // Inakuwa active ukipata gem ya kwanza
+    mainBtn.disabled = true;
 
     initBoard();
   }
@@ -191,7 +191,7 @@ html, body { background: var(--bg-dark); color: var(--text-main); font-family: v
       cells[idx].textContent = '💣';
 
       revealAllMines();
-      msgEl.textContent = '💥 UMEPIGWA BOMU! Umepoteza TSh ' + betAmount;
+      msgEl.textContent = '💥 BOOM! You hit a mine and lost TSh ' + betAmount.toLocaleString();
       msgEl.style.color = 'var(--danger)';
 
       resetControls();
@@ -211,7 +211,7 @@ html, body { background: var(--bg-dark); color: var(--text-main); font-family: v
 
       mainBtn.disabled = false;
       mainBtn.textContent = 'CASHOUT (TSh ' + currentWin.toLocaleString() + ')';
-      msgEl.textContent = 'Umetokea Salama! Endelea au Chukua Hela.';
+      msgEl.textContent = 'Safe Tile! Keep going or Cashout.';
       msgEl.style.color = 'var(--accent-green)';
 
       if (gemsFound === SIZE - mineCount) {
@@ -228,7 +228,7 @@ html, body { background: var(--bg-dark); color: var(--text-main); font-family: v
     updateBalanceUI();
 
     inGame = false;
-    msgEl.textContent = '🎉 SHINDA! Umeweka mfukoni TSh ' + winAmount.toLocaleString();
+    msgEl.textContent = '🎉 WINNER! Cashed out TSh ' + winAmount.toLocaleString();
     msgEl.style.color = 'var(--accent-green)';
 
     revealAllMines();
@@ -262,7 +262,7 @@ html, body { background: var(--bg-dark); color: var(--text-main); font-family: v
     if (inGame) return;
     balance = 5000;
     updateBalanceUI();
-    msgEl.textContent = 'Wallet imerudishwa TSh 5,000!';
+    msgEl.textContent = 'Wallet reset to TSh 5,000!';
     msgEl.style.color = 'var(--text-muted)';
   };
 
@@ -273,7 +273,7 @@ html, body { background: var(--bg-dark); color: var(--text-main); font-family: v
 `;
 
 export default {
-  name: 'silamines',
+  name: 'mines',
   alias: ['silamine', 'sila-mines', 'mines2'],
   description: 'Play SILA Mines Betting Game in WhatsApp',
   category: 'games',
