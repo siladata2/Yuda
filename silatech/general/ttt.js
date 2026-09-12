@@ -1,43 +1,152 @@
-// Game session storage
-const sessions = new Map();
+import { randomUUID } from 'crypto';
 
 export default {
-  name: 'ttt',
-  alias: ['tictactoe'],
-  description: 'Play Tic Tac Toe text game',
+  name: 'chess',
+  alias: ['playchess', 'chessgame'],
+  description: 'Play Chess Interactive Game',
   category: 'games',
+  ownerOnly: false,
 
-  async execute(sock, msg, args, prefix) {
+  async execute(sock, msg, args, prefix, options) {
     const sender = msg.key.remoteJid;
-    const input = args[0]; // Mfano: 1, 2, 3...
 
-    let game = sessions.get(sender);
+    try {
+      const responseId = randomUUID();
 
-    if (!game || args[0] === 'reset') {
-      // Inaload bodi mpya ya HTML-like logic (3x3 grid)
-      game = { board: ['1', '2', '3', '4', '5', '6', '7', '8', '9'], turn: '❌' };
-      sessions.set(sender, game);
+      const content = {
+        messageContextInfo: {
+          messageSecret: "v/3VN8Gfr2dbKzgt1GKDEU7ovyYW+nswh4Duwq6KDuU="
+        },
+        botForwardedMessage: {
+          message: {
+            richResponseMessage: {
+              messageType: 1,
+              unifiedResponse: {
+                data: Buffer.from(JSON.stringify({
+                  "response_id": responseId,
+                  "sections": [
+                    {
+                      "view_model": {
+                        "primitive": {
+                          "__typename": "FOATextPrimitive",
+                          "text": "Chess Master AI"
+                        },
+                        "__typename": "GenAISingleLayoutViewModel"
+                      }
+                    },
+                    {
+                      "view_model": {
+                        "primitive": {
+                          "text": "♟️ *CHESS ENGINE* - Live Game\nStatus: *YOUR TURN*",
+                          "__typename": "GenAIMarkdownTextUXPrimitive"
+                        },
+                        "__typename": "GenAISingleLayoutViewModel"
+                      }
+                    },
+                    {
+                      "view_model": {
+                        "primitive": {
+                          "__typename": "GenAIImagePrimitive",
+                          "preview_image": {
+                            "__typename": "GenAIMediaItem",
+                            "mime_type": "image/jpeg",
+                            "url": "https://i.ibb.co/674988wP/silatech.jpg" // Weka URL ya picha ya Bodi ya Chess hapa
+                          },
+                          "full_image": {
+                            "__typename": "GenAIMediaItem",
+                            "mime_type": "image/jpeg",
+                            "url": "https://i.ibb.co/674988wP/silatech.jpg"
+                          }
+                        },
+                        "__typename": "GenAISingleLayoutViewModel"
+                      }
+                    },
+                    {
+                      "view_model": {
+                        "primitives": [
+                          {
+                            "__typename": "GenAI3PExtWidgetPrimitive",
+                            "header": {
+                              "__typename": "GenAI3PExtWidgetStandardHeader",
+                              "title": "Controls"
+                            },
+                            "body": {
+                              "__typename": "GenAI3PExtCalendarEventList",
+                              "sections": [],
+                              "ctas": [
+                                {
+                                  "__typename": "GenAI3PExtWidgetCTA",
+                                  "label": "New Game 🔄",
+                                  "state": "PENDING",
+                                  "kind": "OTHER",
+                                  "tool_call_id": "chess_reset",
+                                  "toast": {
+                                    "__typename": "GenAI3PExtWidgetToast",
+                                    "label": "Starting new game..."
+                                  }
+                                },
+                                {
+                                  "__typename": "GenAI3PExtWidgetCTA",
+                                  "label": "Undo ↩️",
+                                  "state": "PENDING",
+                                  "kind": "OTHER",
+                                  "tool_call_id": "chess_undo",
+                                  "toast": {
+                                    "__typename": "GenAI3PExtWidgetToast",
+                                    "label": "Undoing move..."
+                                  }
+                                },
+                                {
+                                  "__typename": "GenAI3PExtWidgetCTA",
+                                  "label": "Resign 🏳️",
+                                  "state": "PENDING",
+                                  "kind": "OTHER",
+                                  "tool_call_id": "chess_resign",
+                                  "toast": {
+                                    "__typename": "GenAI3PExtWidgetToast",
+                                    "label": "Game ended"
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ],
+                        "__typename": "GenAIHScrollLayoutViewModel"
+                      }
+                    },
+                    {
+                      "view_model": {
+                        "primitives": [
+                          {
+                            "__typename": "GenAIFooterActionPrimitive",
+                            "cta_text": "Play Full Screen Web App",
+                            "cta_type": "OPEN_URL",
+                            "cta_url": "https://silatech.site/chess"
+                          }
+                        ],
+                        "__typename": "GenAIHScrollLayoutViewModel"
+                      }
+                    }
+                  ]
+                })).toString('base64')
+              },
+              contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardOrigin: 4
+              }
+            }
+          }
+        }
+      };
+
+      await sock.relayMessage(sender, content, {});
+
+    } catch (error) {
+      console.error('[chess]', error);
+      await sock.sendMessage(sender, { 
+        text: `✖ ${error?.message || error}` 
+      });
     }
-
-    if (input && !isNaN(input) && input >= 1 && input <= 9) {
-      const pos = parseInt(input) - 1;
-      if (game.board[pos] !== '❌' && game.board[pos] !== '⭕') {
-        game.board[pos] = game.turn;
-        game.turn = game.turn === '❌' ? '⭕' : '❌';
-      }
-    }
-
-    // Render HTML-like UI kwa Emojis
-    const renderBoard = 
-      `🎮 *TIC-TAC-TOE GAME*\n\n` +
-      ` ${game.board[0]} | ${game.board[1]} | ${game.board[2]} \n` +
-      `---+---+---\n` +
-      ` ${game.board[3]} | ${game.board[4]} | ${game.board[5]} \n` +
-      `---+---+---\n` +
-      ` ${game.board[6]} | ${game.board[7]} | ${game.board[8]} \n\n` +
-      `Lượt ya: ${game.turn}\n` +
-      `Jibu kwa: *${prefix}ttt [namba]* (mfano: ${prefix}ttt 5)`;
-
-    await sock.sendMessage(sender, { text: renderBoard }, { quoted: msg });
   }
 };
