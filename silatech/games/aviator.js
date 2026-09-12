@@ -307,7 +307,7 @@ canvas { width: 100%; height: 100%; display: block; }
 
 export default {
   name: 'aviator',
-  alias: ['aviator', 'madrin', 'crash'],
+  alias: ['aviator', 'silaaviator', 'crash'],
   description: 'Play SILA Madrin Aviator in WhatsApp',
   category: 'games',
   ownerOnly: false,
