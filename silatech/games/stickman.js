@@ -7,35 +7,45 @@ const gStickmanHtml = `
   --muted: #8696a0;
   --accent: #00a884;
   --danger: #f2593f;
+  --special: #f2c265;
   --line: #2a3942;
   --cell-bg: #111b21;
   --sys: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
 html, body { background: transparent; color: var(--ink); font-family: var(--sys); min-height: 100vh; overflow: hidden; touch-action: none; }
-.stage { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 16px; }
+.stage { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; }
 .card { width: 100%; max-width: 360px; }
-.header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
-.header__title { font-size: 17px; font-weight: 600; }
-.header__sub { font-size: 12px; color: var(--muted); }
-.stats { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 12px; }
-.stats b { color: var(--ink); font-weight: 600; margin-left: 4px; }
+.header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.header__title { font-size: 16px; font-weight: 600; color: var(--accent); }
+.header__sub { font-size: 11px; color: var(--muted); }
+.stats { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.stats b { color: var(--ink); font-weight: 600; margin-left: 2px; }
+
+/* Health Bar Design */
+.hp-container { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-bottom: 8px; overflow: hidden; }
+.hp-fill { height: 100%; width: 100%; background: var(--accent); transition: width 0.2s ease, background 0.3s; }
+
 .game-container { position: relative; width: 100%; aspect-ratio: 4/3; background: var(--cell-bg); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 canvas { width: 100%; height: 100%; display: block; }
-.controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
-.btn { background: var(--card-2); border: 1px solid var(--line); border-radius: 8px; color: var(--ink); font-weight: 600; padding: 12px 0; font-size: 14px; cursor: pointer; text-align: center; }
+.controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.btn { background: var(--card-2); border: 1px solid var(--line); border-radius: 8px; color: var(--ink); font-weight: 600; padding: 10px 0; font-size: 12px; cursor: pointer; text-align: center; }
 .btn:active { background: var(--accent); color: #0b141a; }
 .btn-attack { background: #374248; border-color: var(--accent); color: var(--accent); }
-.footer { margin-top: 10px; display: flex; justify-content: center; }
-.footer__reset { background: none; border: none; color: var(--accent); font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; padding: 6px 12px; }
-.msg { text-align: center; font-size: 14px; color: var(--accent); font-weight: 600; margin-top: 6px; min-height: 18px; }
+.btn-power { background: #3e321e; border-color: var(--special); color: var(--special); }
+.footer { margin-top: 6px; display: flex; justify-content: center; }
+.footer__reset { background: none; border: none; color: var(--accent); font-family: inherit; font-size: 12px; font-weight: 500; cursor: pointer; padding: 4px 8px; }
+.msg { text-align: center; font-size: 13px; color: var(--accent); font-weight: 600; margin-top: 4px; min-height: 16px; }
 </style>
 
 <div class="stage">
   <div class="card">
     <div class="header">
-      <span class="header__title">STICKMAN SLAYER</span>
-      <span class="header__sub">Tap or Use Buttons</span>
+      <span class="header__title">STICKMAN WARRIOR PRO</span>
+      <span class="header__sub">LVL <b id="level" style="color:var(--accent);">1</b></span>
+    </div>
+    <div class="hp-container">
+      <div class="hp-fill" id="hp-fill"></div>
     </div>
     <div class="stats">
       <span>SCORE<b id="score">0</b></span>
@@ -48,7 +58,8 @@ canvas { width: 100%; height: 100%; display: block; }
     <div class="msg" id="msg"></div>
     <div class="controls">
       <button class="btn" id="btn-left">← LEFT</button>
-      <button class="btn btn-attack" id="btn-attack">⚔️ ATTACK</button>
+      <button class="btn btn-attack" id="btn-attack">⚔️ SLASH</button>
+      <button class="btn btn-power" id="btn-power">💥 BLAST</button>
       <button class="btn" id="btn-right">RIGHT →</button>
     </div>
     <div class="footer">
@@ -63,8 +74,10 @@ canvas { width: 100%; height: 100%; display: block; }
   const ctx = canvas.getContext('2d');
   const scoreEl = document.getElementById('score');
   const killsEl = document.getElementById('kills');
+  const levelEl = document.getElementById('level');
   const bestEl = document.getElementById('best');
   const msgEl = document.getElementById('msg');
+  const hpFill = document.getElementById('hp-fill');
   
   let width, height;
   function resize() {
@@ -73,8 +86,8 @@ canvas { width: 100%; height: 100%; display: block; }
   }
   resize();
 
-  let score = 0, kills = 0, best = 0, gameOver = false;
-  let player, enemies = [], particles = [];
+  let score = 0, kills = 0, level = 1, best = 0, gameOver = false;
+  let player, enemies = [], particles = [], floatingTexts = [];
 
   class Player {
     constructor() {
@@ -83,7 +96,9 @@ canvas { width: 100%; height: 100%; display: block; }
       this.facing = 'right';
       this.isAttacking = false;
       this.attackTimer = 0;
+      this.maxHp = 100;
       this.hp = 100;
+      this.powerCharge = 100;
     }
     draw() {
       ctx.strokeStyle = '#00a884';
@@ -108,42 +123,58 @@ canvas { width: 100%; height: 100%; display: block; }
       ctx.lineTo(this.x + 8, this.y);
       ctx.stroke();
 
-      // Arms & Sword Animation
+      // Arms & Sword
       ctx.beginPath();
       ctx.moveTo(this.x, this.y - 20);
       let armX = this.facing === 'right' ? this.x + 12 : this.x - 12;
       if (this.isAttacking) {
-        armX = this.facing === 'right' ? this.x + 20 : this.x - 20;
+        armX = this.facing === 'right' ? this.x + 22 : this.x - 22;
       }
       ctx.lineTo(armX, this.y - 15);
       ctx.stroke();
 
-      // Sword Draw
       if (this.isAttacking) {
         ctx.strokeStyle = '#e9edef';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        let swordX = this.facing === 'right' ? armX + 18 : armX - 18;
+        let swordX = this.facing === 'right' ? armX + 22 : armX - 22;
         ctx.moveTo(armX, this.y - 15);
-        ctx.lineTo(swordX, this.y - 25);
+        ctx.lineTo(swordX, this.y - 28);
         ctx.stroke();
       }
     }
     attack() {
       if (this.isAttacking) return;
       this.isAttacking = true;
-      this.attackTimer = 10;
+      this.attackTimer = 8;
       
-      // Hit detection
+      let hitAny = false;
       enemies.forEach((enemy, idx) => {
         let dist = Math.abs(enemy.x - this.x);
-        if (dist < 35 && ((this.facing === 'right' && enemy.x > this.x) || (this.facing === 'left' && enemy.x < this.x))) {
-          createParticles(enemy.x, enemy.y - 20, '#f2593f');
-          enemies.splice(idx, 1);
-          score += 50;
-          kills++;
+        if (dist < 45 && ((this.facing === 'right' && enemy.x > this.x) || (this.facing === 'left' && enemy.x < this.x))) {
+          enemy.hp -= 50;
+          createParticles(enemy.x, enemy.y - 20, '#f2593f', 6);
+          if (enemy.hp <= 0) {
+            enemies.splice(idx, 1);
+            kills++;
+            score += 50 * level;
+            addFloatingText('+50', enemy.x, enemy.y - 30, '#00a884');
+            checkLevelUp();
+          }
+          hitAny = true;
         }
       });
+    }
+    specialBlast() {
+      createParticles(this.x, this.y - 15, '#f2c265', 30);
+      enemies.forEach((enemy) => {
+        enemy.hp -= 100;
+        addFloatingText('CRIT!', enemy.x, enemy.y - 30, '#f2c265');
+      });
+      enemies = enemies.filter(e => e.hp > 0);
+      kills += enemies.length;
+      score += 100 * level;
+      checkLevelUp();
     }
     update() {
       if (this.isAttacking) {
@@ -158,7 +189,10 @@ canvas { width: 100%; height: 100%; display: block; }
       this.side = Math.random() < 0.5 ? 'left' : 'right';
       this.x = this.side === 'left' ? -10 : width + 10;
       this.y = height - 40;
-      this.speed = 1.2 + Math.random() * 1.5;
+      this.speed = (1.0 + Math.random() * 0.8) + (level * 0.15);
+      this.hp = 50;
+      this.damage = 10;
+      this.attackCooldown = 0;
     }
     draw() {
       ctx.strokeStyle = '#f2593f';
@@ -184,28 +218,61 @@ canvas { width: 100%; height: 100%; display: block; }
       if (this.x < player.x) this.x += this.speed;
       else this.x -= this.speed;
 
-      // Touch Player Game Over
-      if (Math.abs(this.x - player.x) < 10) {
-        endGame();
+      // Enemy hit player
+      if (Math.abs(this.x - player.x) < 12) {
+        if (this.attackCooldown <= 0) {
+          player.hp -= this.damage;
+          this.attackCooldown = 40;
+          updateHpUI();
+          createParticles(player.x, player.y - 15, '#f2593f', 5);
+          addFloatingText('-10 HP', player.x, player.y - 35, '#f2593f');
+          if (player.hp <= 0) endGame();
+        }
       }
+      if (this.attackCooldown > 0) this.attackCooldown--;
     }
   }
 
-  function createParticles(x, y, color) {
-    for (let i = 0; i < 8; i++) {
+  function checkLevelUp() {
+    if (kills >= level * 5) {
+      level++;
+      player.hp = Math.min(player.maxHp, player.hp + 30); // Heal on Level Up
+      updateHpUI();
+      levelEl.textContent = level;
+      addFloatingText('LEVEL UP!', player.x, player.y - 45, '#f2c265');
+    }
+  }
+
+  function updateHpUI() {
+    let pct = Math.max(0, (player.hp / player.maxHp) * 100);
+    hpFill.style.width = pct + '%';
+    if (pct < 30) hpFill.style.background = 'var(--danger)';
+    else if (pct < 60) hpFill.style.background = 'var(--special)';
+    else hpFill.style.background = 'var(--accent)';
+  }
+
+  function createParticles(x, y, color, count = 8) {
+    for (let i = 0; i < count; i++) {
       particles.push({
         x: x, y: y,
-        vx: (Math.random() - 0.5) * 4,
-        vy: (Math.random() - 0.5) * 4,
-        life: 15,
+        vx: (Math.random() - 0.5) * 5,
+        vy: (Math.random() - 0.5) * 5,
+        life: 18,
         color: color
       });
     }
   }
 
+  function addFloatingText(text, x, y, color) {
+    floatingTexts.push({ text, x, y, color, life: 25 });
+  }
+
   function spawnEnemies() {
     if (gameOver) return;
-    if (Math.random() < 0.035) enemies.push(new Enemy());
+    let spawnRate = 0.02 + (level * 0.005);
+    if (Math.random() < spawnRate && enemies.length < 5 + level) {
+      enemies.push(new Enemy());
+    }
   }
 
   function loop() {
@@ -226,6 +293,7 @@ canvas { width: 100%; height: 100%; display: block; }
       spawnEnemies();
       enemies.forEach(e => { e.update(); e.draw(); });
 
+      // Particles
       particles.forEach((p, idx) => {
         p.x += p.vx;
         p.y += p.vy;
@@ -233,6 +301,16 @@ canvas { width: 100%; height: 100%; display: block; }
         ctx.fillStyle = p.color;
         ctx.fillRect(p.x, p.y, 3, 3);
         if (p.life <= 0) particles.splice(idx, 1);
+      });
+
+      // Floating Texts
+      floatingTexts.forEach((ft, idx) => {
+        ft.y -= 0.8;
+        ft.life--;
+        ctx.fillStyle = ft.color;
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillText(ft.text, ft.x - 10, ft.y);
+        if (ft.life <= 0) floatingTexts.splice(idx, 1);
       });
 
       scoreEl.textContent = score;
@@ -249,24 +327,28 @@ canvas { width: 100%; height: 100%; display: block; }
   }
 
   function init() {
-    score = 0; kills = 0; gameOver = false;
-    enemies = []; particles = [];
+    score = 0; kills = 0; level = 1; gameOver = false;
+    enemies = []; particles = []; floatingTexts = [];
+    levelEl.textContent = level;
     msgEl.textContent = '';
     player = new Player();
+    updateHpUI();
     loop();
   }
 
   // Controls
-  document.getElementById('btn-left').onclick = () => { if(!gameOver){ player.facing = 'left'; player.x = Math.max(20, player.x - 15); } };
-  document.getElementById('btn-right').onclick = () => { if(!gameOver){ player.facing = 'right'; player.x = Math.min(width - 20, player.x + 15); } };
+  document.getElementById('btn-left').onclick = () => { if(!gameOver){ player.facing = 'left'; player.x = Math.max(20, player.x - 16); } };
+  document.getElementById('btn-right').onclick = () => { if(!gameOver){ player.facing = 'right'; player.x = Math.min(width - 20, player.x + 16); } };
   document.getElementById('btn-attack').onclick = () => { if(!gameOver) player.attack(); };
+  document.getElementById('btn-power').onclick = () => { if(!gameOver) player.specialBlast(); };
   document.getElementById('reset').onclick = init;
 
   document.addEventListener('keydown', (e) => {
     if (gameOver) return;
-    if (e.key === 'ArrowLeft') { player.facing = 'left'; player.x = Math.max(20, player.x - 15); }
-    if (e.key === 'ArrowRight') { player.facing = 'right'; player.x = Math.min(width - 20, player.x + 15); }
+    if (e.key === 'ArrowLeft') { player.facing = 'left'; player.x = Math.max(20, player.x - 16); }
+    if (e.key === 'ArrowRight') { player.facing = 'right'; player.x = Math.min(width - 20, player.x + 16); }
     if (e.key === ' ' || e.key === 'ArrowUp') player.attack();
+    if (e.key.toLowerCase() === 'x') player.specialBlast();
   });
 
   init();
@@ -276,8 +358,8 @@ canvas { width: 100%; height: 100%; display: block; }
 
 export default {
   name: 'stickman',
-  alias: ['stickfight', 'stickgame'],
-  description: 'Play Stickman Slayer HTML game in WhatsApp',
+  alias: ['stickfight', 'stickgame', 'stk'],
+  description: 'Play Stickman Warrior Pro in WhatsApp',
   category: 'games',
   ownerOnly: false,
 
@@ -296,7 +378,7 @@ export default {
           message: {
             richResponseMessage: {
               messageType: 1,
-              submessages: [{ messageType: 2, messageText: "⚔️ STICKMAN SLAYER" }],
+              submessages: [{ messageType: 2, messageText: "⚔️ STICKMAN WARRIOR PRO" }],
               unifiedResponse: {
                 data: Buffer.from(JSON.stringify({
                   "response_id": responseId,
