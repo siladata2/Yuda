@@ -64,7 +64,7 @@ canvas { width: 100%; height: 100%; display: block; }
 <div class="stage">
   <div class="card">
     <div class="header">
-      <span class="header__title">✈️ Madrin Aviator</span>
+      <span class="header__title">✈️ Sila Aviator</span>
       <div class="balance-val" id="balance">10,000.00 TZS</div>
     </div>
 
@@ -306,7 +306,7 @@ canvas { width: 100%; height: 100%; display: block; }
 `;
 
 export default {
-  name: 'silaaviator',
+  name: 'aviator',
   alias: ['aviator', 'madrin', 'crash'],
   description: 'Play SILA Madrin Aviator in WhatsApp',
   category: 'games',
