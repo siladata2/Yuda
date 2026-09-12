@@ -1,930 +1,359 @@
-const silaStickmanHtml = `
+const stickmanHtml = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Stickman Fight</title>
 <style>
-:root{
-  --bg:#071015;
-  --panel:#0d1a20;
-  --line:#20343c;
-  --green:#00a884;
-  --green2:#00d9a6;
-  --white:#e9edef;
-  --muted:#8696a0;
-}
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  user-select:none;
-  -webkit-user-select:none;
-  -webkit-tap-highlight-color:transparent;
-}
-html,body{
-  width:100%;
-  min-height:100vh;
-  overflow:hidden;
-  background:transparent;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-  touch-action:none;
-}
-.stage{
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:14px;
-}
-.game{
-  width:100%;
-  max-width:420px;
-}
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:0 2px 10px;
-}
-.title{
-  color:var(--white);
-  font-size:18px;
-  font-weight:700;
-}
-.subtitle{
-  color:var(--muted);
-  font-size:11px;
-}
-.stats{
-  display:flex;
-  gap:8px;
-  margin-bottom:8px;
-}
-.stat{
-  flex:1;
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:9px;
-  padding:7px 10px;
-  text-align:center;
-}
-.stat span{
-  display:block;
-  color:var(--muted);
-  font-size:9px;
-  text-transform:uppercase;
-  letter-spacing:.7px;
-}
-.stat b{
-  color:var(--white);
-  font-size:16px;
-}
-.canvasWrap{
-  position:relative;
-  width:100%;
-  border:1px solid var(--line);
-  border-radius:12px;
-  overflow:hidden;
-  background:#071015;
-  box-shadow:0 10px 35px rgba(0,0,0,.35);
-}
-canvas{
-  display:block;
-  width:100%;
-  height:auto;
-}
-.message{
-  min-height:20px;
-  text-align:center;
-  color:var(--green2);
-  font-size:13px;
-  font-weight:600;
-  margin:7px 0;
-}
-.controls{
-  display:flex;
-  justify-content:center;
-  gap:12px;
-  margin-top:4px;
-}
-button{
-  border:1px solid var(--line);
-  background:var(--panel);
-  color:var(--white);
-  border-radius:10px;
-  min-width:74px;
-  height:42px;
-  font-size:14px;
-  font-weight:600;
-}
-button:active{
-  background:var(--green);
-  transform:scale(.96);
-}
-.reset{
-  color:var(--green2);
-}
-.help{
-  text-align:center;
-  color:var(--muted);
-  font-size:10px;
-  margin-top:8px;
-}
+  :root{
+    --ink:#e9edef;--muted:#8696a0;--accent:#00a884;--bg:#0b141a;
+    --line:#2a3942;--sys:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
+  html,body{background:var(--bg);color:var(--ink);font-family:var(--sys);min-height:100vh;overflow:hidden;touch-action:none;}
+  .stage{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
+  .card{width:100%;max-width:400px;}
+  .header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line);}
+  .header__title{font-size:17px;font-weight:600;}
+  .header__sub{font-size:12px;color:var(--muted);}
+  .stats{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:10px;}
+  .stats b{color:var(--ink);font-weight:600;margin-left:4px;}
+  canvas{width:100%;background:linear-gradient(#1a2b33,#0b141a);border:1px solid var(--line);border-radius:10px;display:block;touch-action:none;}
+  .msg{text-align:center;font-size:14px;color:var(--accent);font-weight:600;margin-top:8px;min-height:18px;}
+  .controls{display:flex;justify-content:space-between;margin-top:12px;gap:8px;}
+  .pad{display:flex;gap:6px;}
+  .pad button{width:52px;height:52px;background:#2a3942;border:1px solid #374248;border-radius:10px;color:var(--ink);font-size:18px;cursor:pointer;}
+  .pad button:active{background:var(--accent);}
+  .actionBtn{width:70px;height:52px;background:#374248;border:1px solid #4a5b63;border-radius:10px;color:var(--ink);font-size:13px;font-weight:600;cursor:pointer;}
+  .actionBtn:active{background:var(--accent);}
+  .footer{margin-top:12px;display:flex;justify-content:center;}
+  .footer__reset{background:none;border:none;color:var(--accent);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;padding:8px 16px;}
 </style>
 </head>
-
 <body>
-<div class="stage">
-<div class="game">
-
-<div class="header">
-  <div class="title">SILA STICKMAN</div>
-  <div class="subtitle">RUN • JUMP • SURVIVE</div>
-</div>
-
-<div class="stats">
-  <div class="stat">
-    <span>Score</span>
-    <b id="score">0</b>
+<main class="stage">
+  <div class="card">
+    <div class="header">
+      <div class="header__title">STICKMAN FIGHT</div>
+      <div class="header__sub">Move + Punch/Kick</div>
+    </div>
+    <div class="stats">
+      <span>You <b id="hpP">100</b></span>
+      <span>Enemy <b id="hpE">100</b></span>
+      <span>Round <b id="round">1</b></span>
+    </div>
+    <canvas id="game" width="360" height="360"></canvas>
+    <div class="msg" id="msg"></div>
+    <div class="controls">
+      <div class="pad">
+        <button id="left">←</button>
+        <button id="right">→</button>
+      </div>
+      <div class="pad">
+        <button class="actionBtn" id="punch">PUNCH</button>
+        <button class="actionBtn" id="kick">KICK</button>
+      </div>
+    </div>
+    <div class="footer"><button class="footer__reset" id="reset">New fight</button></div>
   </div>
-  <div class="stat">
-    <span>Best</span>
-    <b id="best">0</b>
-  </div>
-  <div class="stat">
-    <span>Coins</span>
-    <b id="coins">0</b>
-  </div>
-</div>
-
-<div class="canvasWrap">
-<canvas id="game" width="420" height="520"></canvas>
-</div>
-
-<div class="message" id="message">Tap JUMP to start</div>
-
-<div class="controls">
-  <button id="jump">↑ JUMP</button>
-  <button id="restart" class="reset">↻ NEW GAME</button>
-</div>
-
-<div class="help">
-  Tap JUMP or swipe upward • Keyboard: SPACE / ↑
-</div>
-
-</div>
-</div>
-
+</main>
 <script>
 (function(){
+const cv=document.getElementById('game');
+const ctx=cv.getContext('2d');
+const hpPEl=document.getElementById('hpP');
+const hpEEl=document.getElementById('hpE');
+const roundEl=document.getElementById('round');
+const msgEl=document.getElementById('msg');
 
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d");
-
-const scoreEl=document.getElementById("score");
-const bestEl=document.getElementById("best");
-const coinsEl=document.getElementById("coins");
-const messageEl=document.getElementById("message");
-
-const W=420;
-const H=520;
-const groundY=430;
-
-let running=false;
-let gameOver=false;
-let score=0;
-let coins=0;
-let best=Number(localStorage.getItem("sila_stickman_best")||0);
-
-let speed=5;
-let spawnTimer=0;
-let coinTimer=0;
-let lastTime=0;
-let worldTime=0;
-
-const player={
-  x:78,
-  y:groundY-65,
-  w:34,
-  h:65,
-  vy:0,
-  jumping:false,
-  squash:0
-};
-
-let obstacles=[];
-let coinItems=[];
-let particles=[];
-
-bestEl.textContent=best;
-
-function resetGame(){
-  running=false;
-  gameOver=false;
-  score=0;
-  coins=0;
-  speed=5;
-  spawnTimer=0;
-  coinTimer=0;
-  worldTime=0;
-
-  player.y=groundY-player.h;
-  player.vy=0;
-  player.jumping=false;
-  player.squash=0;
-
-  obstacles=[];
-  coinItems=[];
-  particles=[];
-
-  scoreEl.textContent="0";
-  coinsEl.textContent="0";
-  messageEl.textContent="Tap JUMP to start";
-
-  draw();
+let W=360,H=360;
+function resize(){
+  const rect=cv.getBoundingClientRect();
+  W=rect.width; H=rect.width;
+  cv.width=W; cv.height=H;
 }
+window.addEventListener('resize',resize);
 
-function startGame(){
-  if(gameOver){
-    resetGame();
-  }
-  if(!running){
-    running=true;
-    gameOver=false;
-    messageEl.textContent="RUN!";
-    lastTime=performance.now();
-    requestAnimationFrame(loop);
-  }
-}
+const GROUND=()=>H-40;
 
-function jump(){
-  if(gameOver){
-    resetGame();
-    startGame();
-    return;
-  }
+let player,enemy,round,over;
 
-  if(!running){
-    startGame();
-    player.vy=-13;
-    player.jumping=true;
-    return;
-  }
-
-  if(!player.jumping){
-    player.vy=-13;
-    player.jumping=true;
-    createJumpParticles();
-  }
-}
-
-function spawnObstacle(){
-
-  const type=Math.random();
-
-  if(type<0.55){
-    obstacles.push({
-      x:W+30,
-      y:groundY-35,
-      w:24,
-      h:35,
-      type:"block"
-    });
-  }else if(type<0.82){
-    obstacles.push({
-      x:W+30,
-      y:groundY-52,
-      w:28,
-      h:52,
-      type:"spike"
-    });
-  }else{
-    obstacles.push({
-      x:W+30,
-      y:groundY-25,
-      w:48,
-      h:25,
-      type:"bar"
-    });
-  }
-}
-
-function spawnCoin(){
-
-  const yChoices=[
-    groundY-85,
-    groundY-135,
-    groundY-185
-  ];
-
-  const y=yChoices[Math.floor(Math.random()*yChoices.length)];
-
-  coinItems.push({
-    x:W+20,
-    y:y,
-    r:8,
-    rot:0
-  });
-}
-
-function createParticle(x,y){
-  particles.push({
-    x:x,
-    y:y,
-    vx:(Math.random()-.5)*3,
-    vy:(Math.random()-.5)*3,
-    life:1,
-    size:Math.random()*3+1
-  });
-}
-
-function createJumpParticles(){
-  for(let i=0;i<7;i++){
-    createParticle(player.x+15,groundY-3);
-  }
-}
-
-function createCoinParticles(x,y){
-  for(let i=0;i<10;i++){
-    particles.push({
-      x:x,
-      y:y,
-      vx:(Math.random()-.5)*5,
-      vy:(Math.random()-.5)*5,
-      life:1,
-      size:Math.random()*3+1
-    });
-  }
-}
-
-function rectHit(a,b){
-
-  return(
-    a.x<a.x+a.w &&
-    a.x+a.w>b.x &&
-    a.y<b.y+b.h &&
-    a.y+a.h>b.y
-  );
-}
-
-function playerRect(){
-  return{
-    x:player.x+7,
-    y:player.y+5,
-    w:20,
-    h:player.h-5
+function newFighter(x,color){
+  return {
+    x:x, vx:0, facing: x<W/2?1:-1,
+    hp:100, state:'idle', stateTimer:0,
+    color:color, hit:false
   };
 }
 
-function endGame(){
+function reset(){
+  player=newFighter(W*0.25,'#00d9b3');
+  enemy=newFighter(W*0.75,'#f2593f');
+  round=1; over=false;
+  msgEl.textContent='';
+  updateHud();
+}
 
-  running=false;
-  gameOver=true;
+function updateHud(){
+  hpPEl.textContent=Math.max(0,Math.round(player.hp));
+  hpEEl.textContent=Math.max(0,Math.round(enemy.hp));
+  roundEl.textContent=round;
+}
 
-  if(score>best){
-    best=score;
-    localStorage.setItem("sila_stickman_best",best);
+function distBetween(){ return Math.abs(player.x-enemy.x); }
+
+function doAction(type){
+  if(over) return;
+  if(player.state!=='idle') return;
+  player.state=type;
+  player.stateTimer=0;
+}
+
+function enemyAI(){
+  if(over) return;
+  if(enemy.state!=='idle') return;
+  const d=distBetween();
+  enemy.facing = player.x < enemy.x ? -1 : 1;
+  if(d>60){
+    enemy.vx = enemy.facing*1.6;
+  } else {
+    enemy.vx=0;
+    const r=Math.random();
+    if(r<0.02) enemy.state='punch';
+    else if(r<0.03) enemy.state='kick';
   }
+}
 
-  bestEl.textContent=best;
-  messageEl.textContent="GAME OVER • Tap NEW GAME";
+function applyHit(attacker,defender,dmg,range){
+  const d=distBetween();
+  if(d<range && !attacker.hit){
+    defender.hp-=dmg;
+    attacker.hit=true;
+    defender.state='hurt';
+    defender.stateTimer=0;
+    spawnHitFx(defender.x,GROUND()-40);
+    if(defender.hp<=0) endRound(attacker===player);
+  }
+}
 
-  for(let i=0;i<25;i++){
-    particles.push({
-      x:player.x+18,
-      y:player.y+30,
-      vx:(Math.random()-.5)*7,
-      vy:(Math.random()-.5)*7,
-      life:1,
-      size:Math.random()*4+1
+let fx=[];
+function spawnHitFx(x,y){
+  fx.push({x,y,life:14});
+}
+
+function endRound(playerWon){
+  over=true;
+  msgEl.textContent = playerWon ? 'You win the round! 🥊' : 'You got knocked out!';
+}
+
+function update(){
+  if(!over){
+    // movement
+    if(player.state==='idle'){
+      player.x += player.vx;
+    }
+    player.x=Math.max(20,Math.min(W-20,player.x));
+    enemy.x=Math.max(20,Math.min(W-20,enemy.x));
+
+    player.facing = enemy.x < player.x ? -1 : 1;
+
+    enemyAI();
+    if(enemy.state==='idle'){
+      enemy.x += enemy.vx;
+    }
+
+    // state timers
+    [player,enemy].forEach(f=>{
+      if(f.state!=='idle'){
+        f.stateTimer++;
+        if((f.state==='punch'||f.state==='kick')){
+          if(f.stateTimer===6){
+            if(f===player) applyHit(player,enemy, f.state==='kick'?18:12, f.state==='kick'?55:45);
+            else applyHit(enemy,player, f.state==='kick'?18:12, f.state==='kick'?55:45);
+          }
+        }
+        const dur = f.state==='hurt'?14:16;
+        if(f.stateTimer>dur){
+          f.state='idle'; f.stateTimer=0; f.hit=false;
+        }
+      }
     });
+    updateHud();
   }
+  fx=fx.filter(p=>{p.life--; return p.life>0;});
 }
 
-function update(dt){
-
-  worldTime+=dt;
-
-  speed+=0.0008*dt;
-  score+=Math.floor(speed*0.02*dt);
-
-  scoreEl.textContent=score;
-
-  player.vy+=0.65*(dt/16.67);
-  player.y+=player.vy*(dt/16.67);
-
-  if(player.y>=groundY-player.h){
-    player.y=groundY-player.h;
-    player.vy=0;
-    player.jumping=false;
-  }
-
-  spawnTimer-=dt;
-
-  if(spawnTimer<=0){
-    spawnObstacle();
-    spawnTimer=850+Math.random()*650-(speed*25);
-    if(spawnTimer<420)spawnTimer=420;
-  }
-
-  coinTimer-=dt;
-
-  if(coinTimer<=0){
-    spawnCoin();
-    coinTimer=650+Math.random()*700;
-  }
-
-  obstacles.forEach(o=>{
-    o.x-=speed*(dt/16.67);
-  });
-
-  coinItems.forEach(c=>{
-    c.x-=speed*(dt/16.67);
-    c.rot+=0.08;
-  });
-
-  obstacles=obstacles.filter(o=>o.x>-80);
-  coinItems=coinItems.filter(c=>c.x>-30);
-
-  const p=playerRect();
-
-  for(const o of obstacles){
-
-    if(
-      p.x<o.x+o.w &&
-      p.x+p.w>o.x &&
-      p.y<o.y+o.h &&
-      p.y+p.h>o.y
-    ){
-      endGame();
-      return;
-    }
-  }
-
-  for(let i=coinItems.length-1;i>=0;i--){
-
-    const c=coinItems[i];
-
-    const dx=(p.x+p.w/2)-c.x;
-    const dy=(p.y+p.h/2)-c.y;
-
-    if(Math.sqrt(dx*dx+dy*dy)<22){
-
-      coins++;
-      score+=50;
-
-      coinsEl.textContent=coins;
-      createCoinParticles(c.x,c.y);
-
-      coinItems.splice(i,1);
-    }
-  }
-
-  particles.forEach(p=>{
-    p.x+=p.vx*(dt/16.67);
-    p.y+=p.vy*(dt/16.67);
-    p.vy+=0.05;
-    p.life-=0.025*(dt/16.67);
-  });
-
-  particles=particles.filter(p=>p.life>0);
-}
-
-function drawBackground(){
-
-  const grad=ctx.createLinearGradient(0,0,0,H);
-  grad.addColorStop(0,"#071015");
-  grad.addColorStop(1,"#0c2027");
-
-  ctx.fillStyle=grad;
-  ctx.fillRect(0,0,W,H);
-
-  // moon
-  ctx.beginPath();
-  ctx.arc(330,80,32,0,Math.PI*2);
-  ctx.fillStyle="rgba(233,237,239,.08)";
-  ctx.fill();
-
-  // stars
-  for(let i=0;i<35;i++){
-
-    const x=(i*97)%W;
-    const y=35+(i*53)%250;
-
-    ctx.fillStyle="rgba(255,255,255,.22)";
-    ctx.fillRect(x,y,2,2);
-  }
-
-  // distant buildings
-  ctx.fillStyle="#0b181e";
-
-  for(let i=0;i<12;i++){
-
-    const bw=25+(i%3)*15;
-    const bh=55+(i%4)*25;
-    const x=i*40;
-
-    ctx.fillRect(x,groundY-bh,bw,bh);
-
-    for(let w=0;w<2;w++){
-      ctx.fillStyle="rgba(0,168,132,.16)";
-      ctx.fillRect(
-        x+7+w*10,
-        groundY-bh+12,
-        4,
-        5
-      );
-    }
-
-    ctx.fillStyle="#0b181e";
-  }
-}
-
-function drawGround(){
-
-  ctx.fillStyle="#0a151a";
-  ctx.fillRect(0,groundY,W,H-groundY);
-
-  ctx.fillStyle="#00a884";
-  ctx.fillRect(0,groundY,W,2);
-
-  const offset=(worldTime*speed*.12)%40;
-
-  for(let x=-40;x<W+40;x+=40){
-
-    ctx.fillStyle="rgba(0,168,132,.12)";
-    ctx.fillRect(x-offset,groundY+30,22,2);
-  }
-}
-
-function drawStickman(){
-
-  const x=player.x+17;
-  const y=player.y;
-
+function drawStick(f){
+  const g=GROUND();
+  const bob = f.state==='idle'? Math.sin(Date.now()/200)*2 : 0;
+  const x=f.x, headY=g-70+bob;
   ctx.save();
-  ctx.lineCap="round";
-  ctx.lineJoin="round";
-  ctx.strokeStyle="#e9edef";
-  ctx.fillStyle="#e9edef";
-
-  // shadow
-  ctx.beginPath();
-  ctx.ellipse(
-    x,
-    groundY+3,
-    player.jumping?10:16,
-    3,
-    0,0,Math.PI*2
-  );
-  ctx.fillStyle="rgba(0,0,0,.35)";
-  ctx.fill();
-  ctx.fillStyle="#e9edef";
+  ctx.translate(x,0);
+  ctx.scale(f.facing,1);
+  ctx.strokeStyle=f.color;
+  ctx.fillStyle=f.color;
+  ctx.lineWidth=4;
+  ctx.lineCap='round';
 
   // head
   ctx.beginPath();
-  ctx.arc(x,y+12,10,0,Math.PI*2);
+  ctx.arc(0,headY,12,0,Math.PI*2);
   ctx.fill();
 
   // body
-  ctx.lineWidth=6;
   ctx.beginPath();
-  ctx.moveTo(x,y+23);
-  ctx.lineTo(x,y+45);
-  ctx.stroke();
-
-  // arms
-  const armSwing=Math.sin(worldTime*.015)*8;
-
-  ctx.lineWidth=5;
-  ctx.beginPath();
-  ctx.moveTo(x,y+27);
-  ctx.lineTo(x-13,y+38+armSwing);
-  ctx.moveTo(x,y+27);
-  ctx.lineTo(x+13,y+38-armSwing);
+  ctx.moveTo(0,headY+12);
+  ctx.lineTo(0,g-30);
   ctx.stroke();
 
   // legs
-  let legSwing=Math.sin(worldTime*.02)*9;
-
-  if(player.jumping){
-    legSwing=8;
-  }
-
   ctx.beginPath();
-  ctx.moveTo(x,y+45);
-  ctx.lineTo(x-10,y+61+legSwing);
-  ctx.moveTo(x,y+45);
-  ctx.lineTo(x+10,y+61-legSwing);
+  if(f.state==='kick'){
+    ctx.moveTo(0,g-30); ctx.lineTo(-8,g-8);
+    ctx.moveTo(0,g-30); ctx.lineTo(30,g-25);
+  } else {
+    ctx.moveTo(0,g-30); ctx.lineTo(-10,g);
+    ctx.moveTo(0,g-30); ctx.lineTo(10,g);
+  }
   ctx.stroke();
 
-  // eye
-  ctx.fillStyle="#071015";
+  // arms
   ctx.beginPath();
-  ctx.arc(x+4,y+10,2,0,Math.PI*2);
-  ctx.fill();
-
-  ctx.restore();
-}
-
-function drawObstacle(o){
-
-  ctx.save();
-
-  if(o.type==="spike"){
-
-    ctx.fillStyle="#d95757";
-
-    ctx.beginPath();
-    ctx.moveTo(o.x,o.y+o.h);
-    ctx.lineTo(o.x+o.w/2,o.y);
-    ctx.lineTo(o.x+o.w,o.y+o.h);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.strokeStyle="rgba(255,255,255,.2)";
-    ctx.stroke();
-
-  }else if(o.type==="bar"){
-
-    ctx.fillStyle="#f2a13f";
-    ctx.fillRect(o.x,o.y,o.w,o.h);
-
-    ctx.fillStyle="rgba(0,0,0,.18)";
-    ctx.fillRect(o.x+6,o.y+5,o.w-12,4);
-
-  }else{
-
-    ctx.fillStyle="#b64d61";
-    ctx.fillRect(o.x,o.y,o.w,o.h);
-
-    ctx.fillStyle="rgba(255,255,255,.12)";
-    ctx.fillRect(o.x+4,o.y+5,o.w-8,5);
+  if(f.state==='punch'){
+    ctx.moveTo(0,headY+20); ctx.lineTo(32,headY+18);
+    ctx.moveTo(0,headY+20); ctx.lineTo(-10,headY+35);
+  } else if(f.state==='hurt'){
+    ctx.moveTo(0,headY+20); ctx.lineTo(-14,headY+10);
+    ctx.moveTo(0,headY+20); ctx.lineTo(14,headY+10);
+  } else {
+    ctx.moveTo(0,headY+20); ctx.lineTo(-14,headY+35);
+    ctx.moveTo(0,headY+20); ctx.lineTo(14,headY+35);
   }
-
-  ctx.restore();
-}
-
-function drawCoin(c){
-
-  ctx.save();
-
-  ctx.translate(c.x,c.y);
-  ctx.rotate(Math.sin(c.rot));
-
-  ctx.beginPath();
-  ctx.arc(0,0,c.r,0,Math.PI*2);
-
-  ctx.fillStyle="#f2c265";
-  ctx.fill();
-
-  ctx.lineWidth=2;
-  ctx.strokeStyle="#ffe29a";
   ctx.stroke();
 
-  ctx.fillStyle="#7a581c";
-  ctx.font="bold 9px Arial";
-  ctx.textAlign="center";
-  ctx.textBaseline="middle";
-  ctx.fillText("S",0,1);
-
   ctx.restore();
-}
-
-function drawParticles(){
-
-  particles.forEach(p=>{
-
-    ctx.globalAlpha=Math.max(0,p.life);
-    ctx.fillStyle="#00d9a6";
-
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
-    ctx.fill();
-  });
-
-  ctx.globalAlpha=1;
 }
 
 function draw(){
+  ctx.clearRect(0,0,W,H);
+  // ground
+  ctx.fillStyle='#1a2b33';
+  ctx.fillRect(0,GROUND(),W,H-GROUND());
+  ctx.strokeStyle='#2a3942';
+  ctx.beginPath();
+  ctx.moveTo(0,GROUND());
+  ctx.lineTo(W,GROUND());
+  ctx.stroke();
 
-  drawBackground();
-  drawGround();
+  drawStick(enemy);
+  drawStick(player);
 
-  coinItems.forEach(drawCoin);
-  obstacles.forEach(drawObstacle);
+  // fx
+  fx.forEach(p=>{
+    ctx.fillStyle='rgba(255,220,120,'+(p.life/14)+')';
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,10*(1-p.life/14)+4,0,Math.PI*2);
+    ctx.fill();
+  });
 
-  drawStickman();
-  drawParticles();
-
-  if(!running && !gameOver){
-
-    ctx.fillStyle="rgba(0,0,0,.28)";
+  if(over){
+    ctx.fillStyle='rgba(0,0,0,0.4)';
     ctx.fillRect(0,0,W,H);
-
-    ctx.fillStyle="#e9edef";
-    ctx.textAlign="center";
-    ctx.font="bold 24px Arial";
-    ctx.fillText("SILA STICKMAN",W/2,220);
-
-    ctx.font="13px Arial";
-    ctx.fillStyle="#aebac1";
-    ctx.fillText("Tap JUMP to start running",W/2,248);
-
-  }
-
-  if(gameOver){
-
-    ctx.fillStyle="rgba(0,0,0,.48)";
-    ctx.fillRect(0,0,W,H);
-
-    ctx.textAlign="center";
-
-    ctx.fillStyle="#e9edef";
-    ctx.font="bold 28px Arial";
-    ctx.fillText("GAME OVER",W/2,220);
-
-    ctx.font="14px Arial";
-    ctx.fillStyle="#00d9a6";
-    ctx.fillText("Score: "+score,W/2,250);
-
-    ctx.fillStyle="#aebac1";
-    ctx.fillText("Tap NEW GAME to play again",W/2,278);
   }
 }
 
-function loop(time){
-
-  if(!running){
-    draw();
-    return;
-  }
-
-  const dt=Math.min(35,time-lastTime);
-  lastTime=time;
-
-  update(dt);
+function loop(){
+  update();
   draw();
-
   requestAnimationFrame(loop);
 }
 
-document.getElementById("jump")
-.addEventListener("pointerdown",function(e){
-  e.preventDefault();
-  jump();
+document.getElementById('left').addEventListener('touchstart',()=>{player.vx=-2.2;});
+document.getElementById('left').addEventListener('touchend',()=>{player.vx=0;});
+document.getElementById('right').addEventListener('touchstart',()=>{player.vx=2.2;});
+document.getElementById('right').addEventListener('touchend',()=>{player.vx=0;});
+document.getElementById('left').addEventListener('mousedown',()=>{player.vx=-2.2;});
+document.getElementById('left').addEventListener('mouseup',()=>{player.vx=0;});
+document.getElementById('right').addEventListener('mousedown',()=>{player.vx=2.2;});
+document.getElementById('right').addEventListener('mouseup',()=>{player.vx=0;});
+document.getElementById('punch').addEventListener('click',()=>doAction('punch'));
+document.getElementById('kick').addEventListener('click',()=>doAction('kick'));
+document.getElementById('reset').addEventListener('click',reset);
+
+document.addEventListener('keydown',(e)=>{
+  if(e.key==='ArrowLeft') player.vx=-2.2;
+  else if(e.key==='ArrowRight') player.vx=2.2;
+  else if(e.key===' '||e.key==='p'||e.key==='P') doAction('punch');
+  else if(e.key==='k'||e.key==='K') doAction('kick');
+});
+document.addEventListener('keyup',(e)=>{
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight') player.vx=0;
 });
 
-document.getElementById("restart")
-.addEventListener("pointerdown",function(e){
-  e.preventDefault();
-  resetGame();
-});
-
-document.addEventListener("keydown",function(e){
-
-  if(
-    e.code==="Space" ||
-    e.code==="ArrowUp"
-  ){
-    e.preventDefault();
-    jump();
-  }
-
-  if(e.code==="KeyR"){
-    resetGame();
-  }
-});
-
-let touchStartY=0;
-
-document.addEventListener("touchstart",function(e){
-
-  if(e.touches.length){
-    touchStartY=e.touches[0].clientY;
-  }
-},{passive:true});
-
-document.addEventListener("touchend",function(e){
-
-  if(!e.changedTouches.length)return;
-
-  const dy=e.changedTouches[0].clientY-touchStartY;
-
-  if(dy<-30){
-    jump();
-  }
-},{passive:true});
-
-resetGame();
-
+resize();
+reset();
+loop();
 })();
 </script>
 </body>
 </html>
 `;
 
+/**
+ * Stickman Fight command.
+ *
+ * Sends a normal Baileys interactive/button message containing a link/webview
+ * to the game. Replace GAME_HOST_URL below with the URL where you host
+ * stickman.html (e.g. a simple Express static route), OR see the
+ * "inline webview" note below if your bot framework has a supported
+ * in-chat HTML viewer plugin.
+ *
+ * This does NOT spoof any "verified AI" / trusted-source metadata.
+ */
+
+const GAME_HOST_URL = 'https://your-domain.example.com/games/stickman.html';
+
 export default {
-  name: 'Stickman',
-  alias: ['stickman', 'stickmanrun', 'sila-stickman', 'mchezo-stickman'],
-  description: 'Play SILA Stickman Run game in WhatsApp',
+  name: 'stickman',
+  alias: ['stick', 'fight'],
+  description: 'Play a Stickman Fight mini-game (opens in browser/webview)',
   category: 'games',
   ownerOnly: false,
 
   async execute(sock, msg, args, prefix, options) {
     const sender = msg.key.remoteJid;
-
     try {
-
-      const responseId = 'sila-stickman-' + Date.now();
-
-      const content = {
-        messageContextInfo: {
-          deviceListMetadata: {},
-          deviceListMetadataVersion: 2,
-          messageSecret: "0cCzjnQ5ERoqM2QrQ7KjmMfxsyeWYu+61/chr2wioyE=",
-          botMetadata: {
-            messageDisclaimerText: "",
-            botResponseId: responseId
-          }
-        },
-
-        botForwardedMessage: {
-          message: {
-            richResponseMessage: {
-              messageType: 1,
-
-              submessages: [
-                {
-                  messageType: 2,
-                  messageText: "🥷 SILA STICKMAN"
-                }
-              ],
-
-              unifiedResponse: {
-                data: Buffer.from(
-                  JSON.stringify({
-                    response_id: responseId,
-
-                    sections: [
-                      {
-                        view_model: {
-                          primitive: {
-                            "__typename":
-                              "GenAIaeacdsnwHtmlPrimitive",
-
-                            payload: silaStickmanHtml,
-
-                            trusted_sources: [
-                              "sila-tech"
-                            ]
-                          },
-
-                          "__typename":
-                            "GenAISingleLayoutViewModel"
-                        }
-                      }
-                    ]
-                  })
-                ).toString('base64')
-              },
-
-              contextInfo: {
-                forwardingScore: 1,
-                isForwarded: true,
-
-                forwardedAiBotMessageInfo: {
-                  botJid: "867051314767696@bot"
-                },
-
-                forwardOrigin: 4
-              }
-            }
-          }
-        }
-      };
-
-      await sock.relayMessage(
-        sender,
-        content,
-        {}
-      );
-
-    } catch (error) {
-
-      console.error('[STICKMAN]', error);
-
       await sock.sendMessage(
         sender,
         {
           text:
-            `✖ Error: ${error?.message || error}`
+            '🥊 *Stickman Fight*\n\n' +
+            'Tap the link below to play in your browser:\n' +
+            GAME_HOST_URL +
+            '\n\nControls: ← → move, tap PUNCH/KICK to attack.',
         },
-        {
-          quoted: msg
-        }
+        { quoted: msg }
+      );
+    } catch (error) {
+      console.error('[stickman]', error);
+      await sock.sendMessage(
+        sender,
+        { text: `✖ Error: ${error?.message || error}` },
+        { quoted: msg }
       );
     }
-  }
+  },
 };
+
+/*
+ * HOW TO SERVE THE GAME:
+ * 1. Save the `stickmanHtml` string above to a file, e.g. `public/games/stickman.html`.
+ * 2. If your bot project already runs an Express server, add:
+ *
+ *      app.use('/games', express.static(path.join(__dirname, 'public/games')));
+ *
+ * 3. Set GAME_HOST_URL to that public URL (must be reachable from the user's phone).
+ * 4. If you don't have a web server yet, you can quickly deploy stickman.html
+ *    to any static host (Render, Vercel, GitHub Pages, Netlify) for free.
+ */
