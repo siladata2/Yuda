@@ -1,57 +1,80 @@
 const gSilaAviatorHtml = `
 <style>
 :root {
-  --bg-dark: #0b0e14;
-  --card-bg: #151a21;
+  --bg-dark: #000000;
+  --card-bg: #0d0f12;
+  --panel-bg: #181b20;
+  --input-bg: #000000;
+  --accent-red: #e50914;
+  --accent-green: #28a745;
   --accent-gold: #f5b000;
-  --accent-green: #00c853;
-  --accent-red: #ff3b30;
   --text-main: #ffffff;
   --text-muted: #8e8e93;
   --sys: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
 html, body { background: var(--bg-dark); color: var(--text-main); font-family: var(--sys); min-height: 100vh; overflow: hidden; touch-action: none; }
-.stage { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px; }
-.card { width: 100%; max-width: 360px; background: var(--card-bg); border-radius: 16px; padding: 14px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.stage { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; }
+.card { width: 100%; max-width: 360px; background: var(--card-bg); border-radius: 12px; padding: 10px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
 
-/* Header & Wallet */
-.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px; }
-.header__title { font-size: 16px; font-weight: 800; background: linear-gradient(45deg, #ff3b30, #f5b000); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.balance-box { background: rgba(0,200,83,0.15); border: 1px solid var(--accent-green); border-radius: 8px; padding: 4px 10px; text-align: right; }
-.balance-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; }
-.balance-val { font-size: 13px; font-weight: 700; color: var(--accent-green); }
+/* Header */
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.header__title { font-size: 16px; font-weight: 800; color: var(--accent-red); display: flex; align-items: center; gap: 4px; }
+.balance-val { font-size: 15px; font-weight: 800; color: #fff; }
 
-/* Canvas Animation Area */
-.display-area { position: relative; width: 100%; aspect-ratio: 16/10; background: #07090d; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; margin-bottom: 12px; }
+/* Multiplier History Pills */
+.history-bar { display: flex; gap: 6px; overflow-x: auto; margin-bottom: 8px; padding-bottom: 2px; scrollbar-width: none; }
+.history-bar::-webkit-scrollbar { display: none; }
+.pill { background: #1c2230; color: #5c84ff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 12px; white-space: nowrap; }
+.pill.purple { color: #c05cff; }
+
+/* Display Area */
+.display-area { position: relative; width: 100%; aspect-ratio: 16/11; background: radial-gradient(circle at center, #131924 0%, #080a0f 100%); border-radius: 8px; overflow: hidden; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.05); }
 canvas { width: 100%; height: 100%; display: block; }
-.mult-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 32px; font-weight: 900; color: #fff; text-shadow: 0 0 15px rgba(0,0,0,0.8); pointer-events: none; }
-.mult-overlay.crashed { color: var(--accent-red); }
+.mult-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 42px; font-weight: 900; color: #fff; pointer-events: none; }
+.mult-overlay.crashed { color: var(--accent-red); font-size: 20px; }
 
-/* Bet Controls */
-.config-panel { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 12px; }
-.input-group { background: var(--bg-dark); padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
-.input-label { font-size: 10px; color: var(--text-muted); margin-bottom: 2px; }
-.input-field { width: 100%; background: none; border: none; color: #fff; font-weight: bold; font-size: 14px; outline: none; }
+/* Bet Controls Panel */
+.bet-panel { background: var(--panel-bg); border-radius: 12px; padding: 10px; }
+.tabs { display: flex; justify-content: center; gap: 16px; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px; }
+.tab { font-size: 12px; font-weight: 700; color: var(--text-muted); cursor: pointer; position: relative; padding-bottom: 2px; }
+.tab.active { color: #fff; }
+.tab.active::after { content: ''; position: absolute; bottom: -6px; left: 0; width: 100%; height: 2px; background: var(--accent-red); }
 
-/* Buttons */
-.action-btn { width: 100%; background: linear-gradient(180deg, #ff3b30, #d32f2f); border: none; border-radius: 10px; color: #fff; font-weight: 800; padding: 12px; font-size: 14px; cursor: pointer; box-shadow: 0 4px 12px rgba(255,59,48,0.3); transition: opacity 0.2s; }
-.action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.action-btn.cashout { background: linear-gradient(180deg, #f5b000, #d49600); box-shadow: 0 4px 12px rgba(245,176,0,0.3); color: #000; }
+.controls-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
-.msg { text-align: center; font-size: 12px; font-weight: 600; margin-top: 8px; min-height: 16px; color: var(--accent-gold); }
-.footer { margin-top: 8px; display: flex; justify-content: center; }
-.footer__reset { background: none; border: none; color: var(--text-muted); font-size: 11px; cursor: pointer; text-decoration: underline; }
+/* Left Input Box */
+.input-box { background: var(--input-bg); border-radius: 8px; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; border: 1px solid rgba(255,255,255,0.1); }
+.stepper { display: flex; align-items: center; justify-content: space-between; }
+.step-btn { background: #22262c; color: #fff; border: none; border-radius: 50%; width: 22px; height: 22px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.bet-val-display { font-size: 14px; font-weight: 800; color: #fff; }
+.preset-btns { display: flex; gap: 4px; }
+.preset-btn { flex: 1; background: #22262c; color: var(--text-muted); border: none; border-radius: 4px; font-size: 9px; font-weight: 700; padding: 4px 0; cursor: pointer; text-align: center; }
+
+/* Right Big Bet Button */
+.main-bet-btn { background: var(--accent-green); border: none; border-radius: 10px; color: #fff; font-weight: 800; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px; cursor: pointer; transition: opacity 0.2s; }
+.main-bet-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.main-bet-btn.cashout { background: var(--accent-gold); color: #000; }
+.btn-title { font-size: 15px; }
+.btn-sub { font-size: 12px; opacity: 0.9; }
+
+.msg { text-align: center; font-size: 11px; font-weight: 600; margin-top: 6px; min-height: 14px; color: var(--accent-gold); }
 </style>
 
 <div class="stage">
   <div class="card">
     <div class="header">
-      <span class="header__title">✈️ SILA AVIATOR</span>
-      <div class="balance-box">
-        <div class="balance-label">WALLET</div>
-        <div class="balance-val" id="balance">TSh 5,000</div>
-      </div>
+      <span class="header__title">✈️ Madrin Aviator</span>
+      <div class="balance-val" id="balance">10,000.00 TZS</div>
+    </div>
+
+    <div class="history-bar" id="historyBar">
+      <span class="pill">1.03x</span>
+      <span class="pill purple">2.53x</span>
+      <span class="pill">1.72x</span>
+      <span class="pill">1.11x</span>
+      <span class="pill purple">4.55x</span>
+      <span class="pill">1.75x</span>
     </div>
 
     <div class="display-area">
@@ -59,19 +82,34 @@ canvas { width: 100%; height: 100%; display: block; }
       <div class="mult-overlay" id="multDisplay">1.00x</div>
     </div>
 
-    <div class="config-panel">
-      <div class="input-group">
-        <div class="input-label">BET AMOUNT (TSh)</div>
-        <input type="number" id="bet-input" class="input-field" value="500" step="100" min="100">
+    <div class="bet-panel">
+      <div class="tabs">
+        <span class="tab active">Place Bet</span>
+        <span class="tab">Auto</span>
+      </div>
+
+      <div class="controls-grid">
+        <div class="input-box">
+          <div class="stepper">
+            <button class="step-btn" id="minus-btn">-</button>
+            <span class="bet-val-display" id="bet-display">5,000.00</span>
+            <button class="step-btn" id="plus-btn">+</button>
+          </div>
+          <div class="preset-btns">
+            <button class="preset-btn" data-val="1000">1,000</button>
+            <button class="preset-btn" data-val="5000">5,000</button>
+            <button class="preset-btn" data-val="10000">10,000</button>
+          </div>
+        </div>
+
+        <button class="main-bet-btn" id="main-btn">
+          <span class="btn-title">Place Bet</span>
+          <span class="btn-sub" id="btn-sub-val">5,000.00 TZS</span>
+        </button>
       </div>
     </div>
 
-    <button class="action-btn" id="main-btn">PLACE BET</button>
-    <div class="msg" id="msg">Set bet and click Place Bet!</div>
-
-    <div class="footer">
-      <button class="footer__reset" id="reset-bal">Reset Wallet (TSh 5,000)</button>
-    </div>
+    <div class="msg" id="msg">Place your bet to start!</div>
   </div>
 </div>
 
@@ -80,10 +118,12 @@ canvas { width: 100%; height: 100%; display: block; }
   const canvas = document.getElementById('skyCanvas');
   const ctx = canvas.getContext('2d');
   const balanceEl = document.getElementById('balance');
-  const betInput = document.getElementById('bet-input');
+  const betDisplay = document.getElementById('bet-display');
+  const btnSubVal = document.getElementById('btn-sub-val');
   const mainBtn = document.getElementById('main-btn');
   const multDisplay = document.getElementById('multDisplay');
   const msgEl = document.getElementById('msg');
+  const historyBar = document.getElementById('historyBar');
 
   let width, height;
   function resize() {
@@ -92,27 +132,29 @@ canvas { width: 100%; height: 100%; display: block; }
   }
   resize();
 
-  let balance = 5000;
-  let betAmount = 500;
+  let balance = 10000;
+  let betAmount = 5000;
   let multiplier = 1.00;
   let crashPoint = 0;
   let gameInterval = null;
   let isFlying = false;
-  let hasBetted = false;
   let cashedOut = false;
   let planeProgress = 0;
 
-  function updateBalanceUI() {
-    balanceEl.textContent = 'TSh ' + balance.toLocaleString();
+  function updateUI() {
+    balanceEl.textContent = balance.toLocaleString('en-US', {minimumFractionDigits: 2}) + ' TZS';
+    betDisplay.textContent = betAmount.toLocaleString('en-US', {minimumFractionDigits: 2});
+    if (!isFlying) {
+      btnSubVal.textContent = betAmount.toLocaleString('en-US', {minimumFractionDigits: 2}) + ' TZS';
+    }
   }
 
   function drawScene(progress, crashed = false) {
     ctx.clearRect(0, 0, width, height);
 
-    // Draw Grid Lines
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.lineWidth = 1;
-    for (let x = 0; x < width; x += 30) {
+    for (let x = 0; x < width; x += 25) {
       ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
     }
     for (let y = 0; y < height; y += 20) {
@@ -121,84 +163,70 @@ canvas { width: 100%; height: 100%; display: block; }
 
     if (!isFlying && progress === 0) return;
 
-    // Flight Curve Path
-    let startX = 20;
-    let startY = height - 20;
-    let currentX = startX + (width - 60) * Math.min(progress, 1);
-    let currentY = startY - (height - 50) * Math.min(progress, 1);
+    let startX = 10;
+    let startY = height - 10;
+    let currentX = startX + (width - 40) * Math.min(progress, 1);
+    let currentY = startY - (height - 30) * Math.min(progress, 1);
 
     ctx.beginPath();
     ctx.moveTo(startX, startY);
     ctx.quadraticCurveTo(startX + (currentX - startX) / 2, startY, currentX, currentY);
-    ctx.strokeStyle = crashed ? '#ff3b30' : '#f5b000';
+    ctx.strokeStyle = crashed ? '#e50914' : '#e50914';
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    // Fill under curve
     ctx.lineTo(currentX, height);
     ctx.lineTo(startX, height);
-    ctx.fillStyle = crashed ? 'rgba(255, 59, 48, 0.15)' : 'rgba(245, 176, 0, 0.15)';
+    ctx.fillStyle = crashed ? 'rgba(229, 9, 20, 0.1)' : 'rgba(229, 9, 20, 0.2)';
     ctx.fill();
 
-    // Draw Plane Emoji
     if (!crashed) {
-      ctx.font = '20px serif';
+      ctx.font = '18px serif';
       ctx.fillText('✈️', currentX - 10, currentY + 5);
     }
   }
 
   function startFlight() {
-    betAmount = parseInt(betInput.value) || 0;
-
-    if (betAmount < 100) {
-      msgEl.textContent = 'Minimum bet amount is TSh 100!';
-      msgEl.style.color = 'var(--accent-red)';
-      return;
-    }
     if (betAmount > balance) {
-      msgEl.textContent = 'Insufficient balance in your wallet!';
+      msgEl.textContent = 'Insufficient balance!';
       msgEl.style.color = 'var(--accent-red)';
       return;
     }
 
     balance -= betAmount;
-    updateBalanceUI();
+    updateUI();
 
-    // Calculate random crash point
     let rand = Math.random();
-    if (rand < 0.05) crashPoint = 1.00; // Insta crash
-    else crashPoint = parseFloat((1 + Math.pow(Math.random(), 3) * 15).toFixed(2));
+    crashPoint = rand < 0.1 ? 1.00 : parseFloat((1 + Math.pow(Math.random(), 2.5) * 8).toFixed(2));
 
     multiplier = 1.00;
     planeProgress = 0;
     isFlying = true;
-    hasBetted = true;
     cashedOut = false;
 
-    betInput.disabled = true;
     multDisplay.classList.remove('crashed');
     multDisplay.textContent = '1.00x';
-    msgEl.textContent = 'Plane is flying! Cash out before it flies away!';
+    msgEl.textContent = 'Plane taking off...';
     msgEl.style.color = 'var(--accent-gold)';
 
-    mainBtn.textContent = 'CASHOUT (TSh ' + betAmount + ')';
-    mainBtn.className = 'action-btn cashout';
+    mainBtn.className = 'main-bet-btn cashout';
+    mainBtn.querySelector('.btn-title').textContent = 'Cash Out';
 
     gameInterval = setInterval(() => {
-      planeProgress += 0.015;
-      multiplier += 0.02 + (multiplier * 0.015);
+      planeProgress += 0.012;
+      multiplier += 0.01 + (multiplier * 0.01);
 
       if (multiplier >= crashPoint) {
         crashGame();
       } else {
         multDisplay.textContent = multiplier.toFixed(2) + 'x';
         if (!cashedOut) {
-          let currentWin = Math.floor(betAmount * multiplier);
-          mainBtn.textContent = 'CASHOUT (TSh ' + currentWin.toLocaleString() + ')';
+          let currentWin = (betAmount * multiplier).toFixed(2);
+          btnSubVal.textContent = parseFloat(currentWin).toLocaleString() + ' TZS';
         }
         drawScene(planeProgress, false);
       }
-    }, 80);
+    }, 70);
   }
 
   function cashOut() {
@@ -207,13 +235,13 @@ canvas { width: 100%; height: 100%; display: block; }
     cashedOut = true;
     let winAmount = Math.floor(betAmount * multiplier);
     balance += winAmount;
-    updateBalanceUI();
+    updateUI();
 
-    msgEl.textContent = '🎉 WINNER! Cashed out TSh ' + winAmount.toLocaleString();
+    msgEl.textContent = '🎉 Cashed out ' + winAmount.toLocaleString() + ' TZS';
     msgEl.style.color = 'var(--accent-green)';
 
     mainBtn.disabled = true;
-    mainBtn.textContent = 'CASHED OUT';
+    mainBtn.querySelector('.btn-title').textContent = 'Cashed Out';
   }
 
   function crashGame() {
@@ -226,35 +254,52 @@ canvas { width: 100%; height: 100%; display: block; }
     drawScene(planeProgress, true);
 
     if (!cashedOut) {
-      msgEl.textContent = '💥 CRASHED! You lost TSh ' + betAmount.toLocaleString();
+      msgEl.textContent = '💥 Flew Away!';
       msgEl.style.color = 'var(--accent-red)';
     }
+
+    // Add to history
+    const pill = document.createElement('span');
+    pill.className = 'pill' + (crashPoint >= 2.0 ? ' purple' : '');
+    pill.textContent = crashPoint.toFixed(2) + 'x';
+    historyBar.prepend(pill);
 
     resetControls();
   }
 
   function resetControls() {
-    betInput.disabled = false;
     mainBtn.disabled = false;
-    mainBtn.textContent = 'PLACE BET';
-    mainBtn.className = 'action-btn';
-    hasBetted = false;
+    mainBtn.className = 'main-bet-btn';
+    mainBtn.querySelector('.btn-title').textContent = 'Place Bet';
+    updateUI();
   }
 
-  mainBtn.onclick = () => {
-    if (!isFlying && !hasBetted) startFlight();
-    else if (isFlying && !cashedOut) cashOut();
-  };
-
-  document.getElementById('reset-bal').onclick = () => {
+  // Event Listeners
+  document.getElementById('minus-btn').onclick = () => {
     if (isFlying) return;
-    balance = 5000;
-    updateBalanceUI();
-    msgEl.textContent = 'Wallet reset to TSh 5,000!';
-    msgEl.style.color = 'var(--text-muted)';
+    if (betAmount > 1000) betAmount -= 1000;
+    updateUI();
+  };
+  document.getElementById('plus-btn').onclick = () => {
+    if (isFlying) return;
+    betAmount += 1000;
+    updateUI();
   };
 
-  updateBalanceUI();
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.onclick = () => {
+      if (isFlying) return;
+      betAmount = parseInt(btn.dataset.val);
+      updateUI();
+    };
+  });
+
+  mainBtn.onclick = () => {
+    if (!isFlying) startFlight();
+    else if (!cashedOut) cashOut();
+  };
+
+  updateUI();
   drawScene(0);
 })();
 </script>
@@ -262,8 +307,8 @@ canvas { width: 100%; height: 100%; display: block; }
 
 export default {
   name: 'silaaviator',
-  alias: ['aviator', 'sila-aviator', 'crash'],
-  description: 'Play SILA Aviator Crash Game in WhatsApp',
+  alias: ['aviator', 'madrin', 'crash'],
+  description: 'Play SILA Madrin Aviator in WhatsApp',
   category: 'games',
   ownerOnly: false,
 
@@ -282,7 +327,7 @@ export default {
           message: {
             richResponseMessage: {
               messageType: 1,
-              submessages: [{ messageType: 2, messageText: "✈️ SILA AVIATOR" }],
+              submessages: [{ messageType: 2, messageText: "✈️ Madrin Aviator" }],
               unifiedResponse: {
                 data: Buffer.from(JSON.stringify({
                   "response_id": responseId,
