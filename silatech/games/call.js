@@ -95,7 +95,7 @@ let player,enemies,bullets,particles,move,firing,reloading,best=0,running=false,
 let score,wave,killsThisWave,ammo,reloadTimer;
 
 function reset(){
-  player={x:W/2,y:H/2,r:11,hp:100,speed:2.4,fireCd:0};
+  player={x:W/2,y:H/2,r:11,hp:100,speed:2.4,fireCd:0,ang:0,walkPhase:0,hitFlash:0};
   enemies=[];bullets=[];particles=[];
   move={x:0,y:0};firing=false;reloading=false;
   score=0;wave=1;killsThisWave=0;ammo=MAG;reloadTimer=0;frame=0;
@@ -127,7 +127,7 @@ function spawnEnemy(){
   else if(side===2){x=-20;y=Math.random()*H;}
   else {x=W+20;y=Math.random()*H;}
   const hard=Math.random()<Math.min(0.5,0.1+wave*0.04);
-  enemies.push({x,y,r:hard?13:10,hp:hard?3:1,maxHp:hard?3:1,speed:hard?1.0:1.4+Math.random()*0.4,hard});
+  enemies.push({x,y,r:hard?13:10,hp:hard?3:1,maxHp:hard?3:1,speed:hard?1.0:1.4+Math.random()*0.4,hard,ang:0,walkPhase:Math.random()*10,hitFlash:0});
 }
 function nearestEnemy(){
   let best=null,bd=Infinity;
@@ -146,8 +146,9 @@ function tryFire(){
   bullets.push({x:player.x,y:player.y,vx:dx/len*7,vy:dy/len*7,life:60});
   ammo--;
   player.fireCd=8;
+  player.ang=Math.atan2(dy,dx);
   updateHUD();
-  particles.push({x:player.x+dx/len*14,y:player.y+dy/len*14,r:6,life:1,type:'flash'});
+  particles.push({x:player.x+dx/len*20,y:player.y+dy/len*20,r:7,life:1,type:'flash'});
   if(ammo<=0) startReload();
 }
 function startReload(){
@@ -159,15 +160,22 @@ function startReload(){
 function update(){
   frame++;
   if(player.fireCd>0) player.fireCd--;
+  if(player.hitFlash>0) player.hitFlash--;
   if(reloading){
     reloadTimer--;
     if(reloadTimer<=0){ reloading=false; ammo=MAG; updateHUD(); }
   }
   if(firing) tryFire();
+  const movingMag=Math.hypot(move.x,move.y);
   player.x+=move.x*player.speed;
   player.y+=move.y*player.speed;
   player.x=Math.max(player.r,Math.min(W-player.r,player.x));
   player.y=Math.max(player.r,Math.min(H-player.r,player.y));
+  if(movingMag>0){
+    player.walkPhase+=0.35;
+    const target0=nearestEnemy();
+    if(!target0) player.ang=Math.atan2(move.y,move.x);
+  }
   const spawnRate=Math.max(22,60-wave*4);
   if(frame%spawnRate===0) spawnEnemy();
   enemies.forEach(e=>{
@@ -175,6 +183,9 @@ function update(){
     const len=Math.hypot(dx,dy)||1;
     e.x+=dx/len*e.speed;
     e.y+=dy/len*e.speed;
+    e.ang=Math.atan2(dy,dx);
+    e.walkPhase+=e.speed*0.32;
+    if(e.hitFlash>0) e.hitFlash--;
   });
   bullets.forEach(b=>{b.x+=b.vx;b.y+=b.vy;b.life--;});
   bullets=bullets.filter(b=>b.life>0&&b.x>-10&&b.x<W+10&&b.y>-10&&b.y<H+10);
@@ -182,8 +193,9 @@ function update(){
     for(const e of enemies){
       if(Math.hypot(b.x-e.x,b.y-e.y)<e.r){
         e.hp--;
+        e.hitFlash=6;
         b.life=0;
-        particles.push({x:e.x,y:e.y,r:e.r,life:1,type:'spark'});
+        for(let i=0;i<4;i++) particles.push({x:e.x,y:e.y,vx:(Math.random()-0.5)*2.2,vy:(Math.random()-0.5)*2.2,r:2+Math.random()*2,life:1,type:'blood'});
         break;
       }
     }
@@ -196,8 +208,9 @@ function update(){
   for(const e of enemies){
     if(Math.hypot(e.x-player.x,e.y-player.y)<e.r+player.r){
       player.hp-=e.hard?0.7:0.4;
+      player.hitFlash=8;
       e.hp=0;
-      particles.push({x:e.x,y:e.y,r:e.r,life:1,type:'spark'});
+      for(let i=0;i<4;i++) particles.push({x:player.x,y:player.y,vx:(Math.random()-0.5)*2.2,vy:(Math.random()-0.5)*2.2,r:2+Math.random()*2,life:1,type:'blood'});
     }
   }
   enemies=enemies.filter(e=>e.hp>0);
@@ -205,13 +218,58 @@ function update(){
   if(killsThisWave>=8+wave*2){
     wave++;killsThisWave=0;updateHUD();
   }
-  particles.forEach(p=>p.life-=0.08);
+  particles.forEach(p=>{
+    p.life-=0.06;
+    if(p.type==='blood'){ p.x+=p.vx; p.y+=p.vy; p.vx*=0.9; p.vy*=0.9; }
+  });
   particles=particles.filter(p=>p.life>0);
 }
 function roundRect(x,y,w,h,r){
   ctx.beginPath();
   ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
   ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+function drawSoldier(x,y,ang,walkPhase,r,vestLight,vestDark,helmet,hitFlash){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.globalAlpha=0.32;
+  ctx.fillStyle='#000';
+  ctx.beginPath();ctx.ellipse(0,r*0.55,r*1.05,r*0.42,0,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=1;
+  ctx.rotate(ang);
+  const swing=Math.sin(walkPhase)*r*0.55;
+  ctx.strokeStyle='#20261f';
+  ctx.lineWidth=r*0.34;
+  ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(-r*0.18,r*0.1);ctx.lineTo(-r*0.18+swing*0.25,r*1.0+Math.abs(swing)*0.2);
+  ctx.moveTo(r*0.18,r*0.1);ctx.lineTo(r*0.18-swing*0.25,r*1.0+Math.abs(swing)*0.2);
+  ctx.stroke();
+  ctx.strokeStyle=vestDark;
+  ctx.lineWidth=r*0.34;ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(0,-r*0.05);ctx.lineTo(r*1.35,r*0.05);
+  ctx.stroke();
+  ctx.strokeStyle='#3a4046';ctx.lineWidth=r*0.16;
+  ctx.beginPath();ctx.moveTo(r*0.55,r*0.02);ctx.lineTo(r*1.55,r*0.02);ctx.stroke();
+  ctx.strokeStyle=vestDark;ctx.lineWidth=r*0.3;
+  ctx.beginPath();ctx.moveTo(0,r*0.1);ctx.lineTo(r*0.35,r*0.55);ctx.stroke();
+  const torsoGrad=ctx.createLinearGradient(-r*0.62,-r*0.5,r*0.62,r*0.5);
+  torsoGrad.addColorStop(0,vestLight);
+  torsoGrad.addColorStop(1,vestDark);
+  ctx.fillStyle=hitFlash>0?'#ffffff':torsoGrad;
+  roundRect(-r*0.6,-r*0.48,r*1.2,r*1.0,r*0.28);
+  ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,0.25)';ctx.lineWidth=1;
+  ctx.stroke();
+  ctx.fillStyle='#e0b892';
+  ctx.beginPath();ctx.arc(0,0,r*0.001,0,0);
+  ctx.beginPath();ctx.arc(-r*0.02,-r*0.86,r*0.4,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=helmet;
+  ctx.beginPath();ctx.arc(-r*0.02,-r*0.9,r*0.46,Math.PI*0.85,Math.PI*2.15);ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,0.4)';
+  ctx.beginPath();ctx.ellipse(r*0.18,-r*0.86,r*0.14,r*0.08,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();
 }
 function draw(){
   ctx.fillStyle='#151f16';
@@ -220,52 +278,40 @@ function draw(){
   for(let x=0;x<W;x+=28){ ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke(); }
   for(let y=0;y<H;y+=28){ ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke(); }
   bullets.forEach(b=>{
-    ctx.strokeStyle='#f2c265';
+    ctx.strokeStyle='#fff6c8';
     ctx.lineWidth=2;
+    ctx.shadowColor='#f2c265';ctx.shadowBlur=5;
     ctx.beginPath();
     ctx.moveTo(b.x,b.y);
-    ctx.lineTo(b.x-b.vx*1.6,b.y-b.vy*1.6);
+    ctx.lineTo(b.x-b.vx*1.8,b.y-b.vy*1.8);
     ctx.stroke();
+    ctx.shadowBlur=0;
   });
   enemies.forEach(e=>{
-    ctx.save();
-    ctx.shadowColor='rgba(0,0,0,0.5)';ctx.shadowBlur=6;
-    ctx.fillStyle=e.hard?'#c1473f':'#e05c5c';
-    ctx.beginPath();ctx.arc(e.x,e.y,e.r,0,Math.PI*2);ctx.fill();
-    ctx.shadowBlur=0;
+    const dark=e.hard?'#7a1f1f':'#8a2a2a';
+    const light=e.hard?'#c1473f':'#d9564d';
+    drawSoldier(e.x,e.y,e.ang,e.walkPhase,e.r,light,dark,'#2b2b2b',e.hitFlash);
     if(e.maxHp>1){
       ctx.fillStyle='#0b141a';
-      ctx.fillRect(e.x-e.r,e.y-e.r-8,e.r*2,3);
+      ctx.fillRect(e.x-e.r,e.y-e.r-12,e.r*2,3);
       ctx.fillStyle='#f2c265';
-      ctx.fillRect(e.x-e.r,e.y-e.r-8,e.r*2*(e.hp/e.maxHp),3);
+      ctx.fillRect(e.x-e.r,e.y-e.r-12,e.r*2*(e.hp/e.maxHp),3);
     }
-    ctx.restore();
   });
   particles.forEach(p=>{
     ctx.globalAlpha=Math.max(0,p.life);
     if(p.type==='flash'){
       ctx.fillStyle='#fff6c8';
+      ctx.shadowColor='#fff6c8';ctx.shadowBlur=10;
       ctx.beginPath();ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2);ctx.fill();
+      ctx.shadowBlur=0;
     } else {
-      ctx.fillStyle='#f2c265';
-      ctx.beginPath();ctx.arc(p.x,p.y,p.r*(1.4-p.life),0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#c1473f';
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
     }
     ctx.globalAlpha=1;
   });
-  ctx.save();
-  ctx.translate(player.x,player.y);
-  const target=nearestEnemy();
-  let ang=0;
-  if(target) ang=Math.atan2(target.y-player.y,target.x-player.x);
-  ctx.rotate(ang);
-  ctx.strokeStyle='#8696a0';ctx.lineWidth=4;ctx.lineCap='round';
-  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(18,0);ctx.stroke();
-  ctx.restore();
-  ctx.save();
-  ctx.shadowColor='rgba(0,0,0,0.5)';ctx.shadowBlur=8;
-  ctx.fillStyle='#00c2a0';
-  ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,Math.PI*2);ctx.fill();
-  ctx.restore();
+  drawSoldier(player.x,player.y,player.ang,player.walkPhase,player.r,'#00e0b3','#00453a','#123c33',player.hitFlash);
 }
 function loop(){
   if(!running) return;
