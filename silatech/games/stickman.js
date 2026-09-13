@@ -59,7 +59,7 @@ canvas{display:block;width:100%;}
       <div class="ctrl" id="fwd">FWD ▶</div>
       <div class="ctrl" id="punch">👊 PUNCH</div>
       <div class="ctrl" id="kick">🦵 KICK</div>
-      <div class="ctrl" id="block">🛡️ BLOCK</div>
+      <div class="ctrl" id="block">🛡️ BLOoCK</div>
     </div>
     <div class="hint">Get close, then Punch/Kick. Block reduces damage.</div>
   </div>
