@@ -8,70 +8,77 @@ const highwayHtml = `
 :root{--card-2:#2a3942;--ink:#e9edef;--muted:#8696a0;--accent:#00a884;--line:#2a3942;--cell-bg:#111b21;
 --sys:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
-html,body{background:#0b141a;color:var(--ink);font-family:var(--sys);width:100vw;height:100vh;overflow:hidden;touch-action:none;}
-.stage{width:100%;height:100%;display:flex;flex-direction:column;position:relative;}
-.header{position:absolute;top:10px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between;z-index:10;background:rgba(11,20,26,0.7);padding:8px 12px;border-radius:8px;backdrop-filter:blur(4px);}
-.header__title{font-size:15px;font-weight:600;}
-.stats{display:flex;gap:12px;font-size:12px;color:var(--muted);}
-.stats b{color:var(--ink);font-weight:600;margin-left:2px;}
-.wrap{position:relative;width:100%;height:100%;flex:1;overflow:hidden;}
-canvas{display:block;width:100%;height:100%;}
-.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;background:rgba(11,20,26,0.85);z-index:20;}
-.overlay h2{font-size:22px;text-align:center;padding:0 16px;}
-.overlay button{background:var(--accent);border:none;border-radius:8px;color:#0b141a;font-weight:700;font-family:inherit;padding:12px 28px;font-size:16px;cursor:pointer;}
-.controls{position:absolute;bottom:20px;left:20px;right:20px;display:flex;justify-content:space-between;gap:20px;z-index:10;}
-.ctrl{flex:1;background:rgba(42,57,66,0.6);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:18px 0;text-align:center;font-size:24px;color:var(--ink);cursor:pointer;backdrop-filter:blur(4px);}
-.ctrl:active{background:var(--accent);color:#0b141a;}
+html,body{background:transparent;color:var(--ink);font-family:var(--sys);min-height:100vh;overflow:hidden;touch-action:none;}
+.stage{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;}
+.card{width:100%;max-width:360px;}
+.header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--line);}
+.header__title{font-size:17px;font-weight:600;}
+.header__sub{font-size:12px;color:var(--muted);}
+.stats{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:14px;}
+.stats b{color:var(--ink);font-weight:600;margin-left:4px;}
+.wrap{position:relative;background:#0b141a;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 10px 30px -10px rgba(0,0,0,.6);}
+canvas{display:block;width:100%;}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:rgba(11,20,26,0.78);}
+.overlay h2{font-size:19px;text-align:center;padding:0 16px;}
+.overlay button{background:var(--accent);border:none;border-radius:8px;color:#0b141a;font-weight:700;font-family:inherit;padding:10px 22px;font-size:14px;cursor:pointer;}
+.controls{display:flex;justify-content:space-between;margin-top:12px;gap:10px;}
+.ctrl{flex:1;background:var(--card-2);border:1px solid var(--line);border-radius:10px;padding:14px 0;text-align:center;font-size:20px;color:var(--ink);cursor:pointer;}
+.ctrl:active{background:var(--accent);}
+.ctrl-fs{flex:0 0 52px;background:var(--card-2);border:1px solid var(--line);border-radius:10px;padding:14px 0;text-align:center;font-size:18px;color:var(--ink);cursor:pointer;}
+.ctrl-fs:active{background:var(--accent);}
+.hint{font-size:11px;color:var(--muted);text-align:center;margin-top:8px;}
+
+/* Fullscreen mode */
+.stage.is-fullscreen{
+  position:fixed;inset:0;z-index:9999;background:#0b141a;padding:12px;
+  display:flex;align-items:center;justify-content:center;
+}
+.stage.is-fullscreen .card{max-width:480px;}
+.stage.is-fullscreen .wrap{width:100%;}
+.stage.is-fullscreen canvas{width:100%;height:auto;}
 </style>
 </head>
 <body>
-<main class="stage">
-  <div class="header">
-    <div class="header__title">SILA Highway</div>
-    <div class="stats"><span>Score<b id="score">0</b></span><span>Best<b id="best">0</b></span><span>Spd<b id="spd">1x</b></span></div>
-  </div>
-  <div class="wrap" id="wrap">
-    <canvas id="canvas"></canvas>
-    <div class="overlay" id="overlay">
-      <h2 id="ov-title">SILA Highway Racer</h2>
-      <button id="ov-btn">Start Engine</button>
+<main class="stage" id="stage">
+  <div class="card">
+    <div class="header">
+      <div class="header__title">SILA Highway Racer</div>
+      <div class="header__sub">Dodge traffic</div>
     </div>
-  </div>
-  <div class="controls">
-    <div class="ctrl" id="left">◀</div>
-    <div class="ctrl" id="right">▶</div>
+    <div class="stats"><span>Score<b id="score">0</b></span><span>Best<b id="best">0</b></span><span>Speed<b id="spd">1x</b></span></div>
+    <div class="wrap" id="wrap">
+      <canvas id="canvas" width="320" height="440"></canvas>
+      <div class="overlay" id="overlay">
+        <h2 id="ov-title">SILA Highway Racer</h2>
+        <button id="ov-btn">Start Engine</button>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="ctrl" id="left">◀</div>
+      <div class="ctrl-fs" id="fullscreen" title="Fullscreen">⛶</div>
+      <div class="ctrl" id="right">▶</div>
+    </div>
+    <div class="hint">Swipe or tap arrows to change lane · Tap ⛶ for fullscreen</div>
   </div>
 </main>
 <script>
 (function(){
 const canvas=document.getElementById('canvas');
 const ctx=canvas.getContext('2d');
-let W=canvas.width=window.innerWidth;
-let H=canvas.height=window.innerHeight;
-
+const W=canvas.width,H=canvas.height;
 const overlay=document.getElementById('overlay');
 const ovTitle=document.getElementById('ov-title');
 const ovBtn=document.getElementById('ov-btn');
-
-let roadL=W*0.15,roadR=W*0.85,roadW=roadR-roadL,lanes=3,laneW=roadW/lanes;
+const stage=document.getElementById('stage');
+const fsBtn=document.getElementById('fullscreen');
+const roadL=W*0.14,roadR=W*0.86,roadW=roadR-roadL,lanes=3,laneW=roadW/lanes;
 let player,traffic,particles,score,best=0,running=false,frame=0,speed=5,dashOffset=0;
 const CARCOLORS=['#e05c5c','#f2c265','#5b8def','#c17cf2','#f2a13f'];
-
-function resize(){
-  W=canvas.width=window.innerWidth;
-  H=canvas.height=window.innerHeight;
-  roadL=W*0.15;
-  roadR=W*0.85;
-  roadW=roadR-roadL;
-  laneW=roadW/lanes;
-  if(player) player.y = H - 100;
-}
-window.addEventListener('resize', resize);
 
 function laneX(i){return roadL+laneW*i+laneW/2;}
 
 function reset(){
-  player={lane:1,x:laneX(1),y:H-100,w:Math.min(42, laneW*0.5),h:Math.min(70, laneW*0.85),targetLane:1};
+  player={lane:1,x:laneX(1),y:H-90,w:34,h:56,targetLane:1};
   traffic=[];particles=[];score=0;frame=0;speed=5;
   document.getElementById('score').textContent='0';
   document.getElementById('spd').textContent='1x';
@@ -93,8 +100,7 @@ function moveLane(dir){
 }
 function spawnTraffic(){
   const lane=Math.floor(Math.random()*lanes);
-  const w=Math.min(40, laneW*0.48);
-  traffic.push({lane,x:laneX(lane),y:-80,w:w,h:w*1.65,color:CARCOLORS[Math.floor(Math.random()*CARCOLORS.length)],passed:false});
+  traffic.push({lane,x:laneX(lane),y:-70,w:32,h:54,color:CARCOLORS[Math.floor(Math.random()*CARCOLORS.length)],passed:false});
 }
 function spawnParticle(){
   particles.push({x:roadL+Math.random()*roadW,y:-10,len:14+Math.random()*18,speed:speed*1.6});
@@ -103,14 +109,14 @@ function update(){
   frame++;
   score=Math.floor(frame/6);
   document.getElementById('score').textContent=score;
-  speed=5+Math.min(8,score*0.02);
+  speed=5+Math.min(6,score*0.02);
   document.getElementById('spd').textContent=(speed/5).toFixed(1)+'x';
   dashOffset=(dashOffset+speed)%40;
   player.x+=(laneX(player.targetLane)-player.x)*0.25;
-  if(frame%Math.max(24,50-Math.floor(score/2))===0) spawnTraffic();
+  if(frame%Math.max(28,55-Math.floor(score/2))===0) spawnTraffic();
   if(frame%4===0) spawnParticle();
   traffic.forEach(t=>t.y+=speed);
-  traffic=traffic.filter(t=>t.y<H+80);
+  traffic=traffic.filter(t=>t.y<H+70);
   particles.forEach(p=>p.y+=p.speed);
   particles=particles.filter(p=>p.y<H+20);
   for(const t of traffic){
@@ -160,25 +166,25 @@ function draw(){
   sky.addColorStop(1,'#111b21');
   ctx.fillStyle=sky;
   ctx.fillRect(0,0,W,H);
-  
   ctx.fillStyle='#1a1f26';
-  ctx.fillRect(0,0,roadL,H);
-  ctx.fillRect(roadR,0,W-roadR,H);
-
+  ctx.beginPath();
+  ctx.moveTo(0,0);ctx.lineTo(roadL,0);ctx.lineTo(roadL*0.55,H);ctx.lineTo(0,H);
+  ctx.closePath();ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(W,0);ctx.lineTo(roadR,0);ctx.lineTo(roadR+ (W-roadR)*1.7,H);ctx.lineTo(W,H);
+  ctx.closePath();ctx.fill();
   const road=ctx.createLinearGradient(0,0,0,H);
   road.addColorStop(0,'#20262c');
   road.addColorStop(1,'#161d22');
   ctx.fillStyle=road;
   ctx.fillRect(roadL,0,roadW,H);
-  
   ctx.strokeStyle='#f2c265';
-  ctx.lineWidth=4;
+  ctx.lineWidth=3;
   ctx.beginPath();ctx.moveTo(roadL,0);ctx.lineTo(roadL,H);ctx.stroke();
   ctx.beginPath();ctx.moveTo(roadR,0);ctx.lineTo(roadR,H);ctx.stroke();
-  
   ctx.strokeStyle='rgba(233,237,239,0.55)';
   ctx.lineWidth=3;
-  ctx.setLineDash([20,20]);
+  ctx.setLineDash([18,18]);
   ctx.lineDashOffset=-dashOffset;
   for(let i=1;i<lanes;i++){
     const x=roadL+laneW*i;
@@ -196,7 +202,7 @@ function draw(){
   });
   ctx.globalAlpha=1;
   traffic.forEach(t=>drawCar(t.x,t.y,t.w,t.h,t.color,false));
-  if(player) drawCar(player.x,player.y,player.w,player.h,'#00c2a0',true);
+  drawCar(player.x,player.y,player.w,player.h,'#00c2a0',true);
 }
 function loop(){
   if(!running) return;
@@ -208,13 +214,48 @@ document.getElementById('right').addEventListener('click',()=>moveLane(1));
 document.addEventListener('keydown',(e)=>{
   if(e.key==='ArrowLeft') moveLane(-1);
   if(e.key==='ArrowRight') moveLane(1);
+  if(e.key==='f'||e.key==='F') toggleFullscreen();
 });
 let sx=0;
-document.getElementById('wrap').addEventListener('touchstart',(e)=>{sx=e.touches[0].clientX;},{passive:true});
+document.getElementById('wrap').addEventListener('touchstart',(e)=>{sx=e.touches[0].clientX;});
 document.getElementById('wrap').addEventListener('touchend',(e)=>{
   const dx=e.changedTouches[0].clientX-sx;
   if(Math.abs(dx)>30) moveLane(dx>0?1:-1);
-},{passive:true});
+});
+
+/* ---- Fullscreen handling ---- */
+function isFsSupported(){
+  return !!(stage.requestFullscreen||stage.webkitRequestFullscreen||stage.mozRequestFullScreen||stage.msRequestFullscreen);
+}
+function isFsActive(){
+  return !!(document.fullscreenElement||document.webkitFullscreenElement||document.mozFullScreenElement||document.msFullscreenElement);
+}
+function enterNativeFullscreen(){
+  const req=stage.requestFullscreen||stage.webkitRequestFullscreen||stage.mozRequestFullScreen||stage.msRequestFullscreen;
+  if(req) return req.call(stage);
+}
+function exitNativeFullscreen(){
+  const exit=document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen||document.msExitFullscreen;
+  if(exit) return exit.call(document);
+}
+function applyFullscreenClass(on){
+  stage.classList.toggle('is-fullscreen',on);
+  fsBtn.textContent=on?'✕':'⛶';
+}
+function toggleFullscreen(){
+  const wantOn=!stage.classList.contains('is-fullscreen');
+  if(isFsSupported()){
+    if(wantOn) enterNativeFullscreen().catch(()=>applyFullscreenClass(true));
+    else exitNativeFullscreen();
+  }else{
+    // Fallback: CSS-only fullscreen overlay for embedded/WebView contexts
+    applyFullscreenClass(wantOn);
+  }
+}
+document.addEventListener('fullscreenchange',()=>applyFullscreenClass(isFsActive()));
+document.addEventListener('webkitfullscreenchange',()=>applyFullscreenClass(isFsActive()));
+fsBtn.addEventListener('click',toggleFullscreen);
+
 ovBtn.addEventListener('click',start);
 draw();
 })();
