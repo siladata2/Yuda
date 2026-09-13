@@ -1,5 +1,3 @@
-import { ButtonV2 } from 'baileys';
-
 const stickmanHtml = `
 <!DOCTYPE html>
 <html lang="en">
@@ -59,7 +57,7 @@ canvas{display:block;width:100%;}
       <div class="ctrl" id="fwd">FWD ▶</div>
       <div class="ctrl" id="punch">👊 PUNCH</div>
       <div class="ctrl" id="kick">🦵 KICK</div>
-      <div class="ctrl" id="block">🛡️ BLOoCK</div>
+      <div class="ctrl" id="block">🛡️ BLOCK</div>
     </div>
     <div class="hint">Get close, then Punch/Kick. Block reduces damage.</div>
   </div>
@@ -228,137 +226,55 @@ draw();
 </html>
 `;
 
-// ============================================
-// Sends the actual fullscreen HTML game payload
-// (same GenAI rich-response pattern as before)
-// ============================================
-async function sendStickmanGame(sock, sender) {
-  const responseId = 'sila-stickman-' + Date.now();
-  const content = {
-    messageContextInfo: {
-      deviceListMetadata: {},
-      deviceListMetadataVersion: 2,
-      messageSecret: "0cCzjnQ5ERoqM2QrQ7KjmMfxsyeWYu+61/chr2wioyE=",
-      botMetadata: { messageDisclaimerText: "", botResponseId: responseId }
-    },
-    botForwardedMessage: {
-      message: {
-        richResponseMessage: {
-          messageType: 1,
-          submessages: [{ messageType: 2, messageText: "🥋 Stickman Fighter" }],
-          unifiedResponse: {
-            data: Buffer.from(JSON.stringify({
-              "response_id": responseId,
-              "sections": [{
-                "view_model": {
-                  "primitive": {
-                    "__typename": "GenAIaeacdsnwHtmlPrimitive",
-                    "payload": stickmanHtml,
-                    "trusted_sources": ["sila-tech"]
-                  },
-                  "__typename": "GenAISingleLayoutViewModel"
-                }
-              }]
-            })).toString('base64')
-          },
-          contextInfo: {
-            forwardingScore: 1,
-            isForwarded: true,
-            forwardedAiBotMessageInfo: { botJid: "867051314767696@bot" },
-            forwardOrigin: 4
-          }
-        }
-      }
-    }
-  };
-  await sock.relayMessage(sender, content, {});
-}
-
-// Pulls a selected id out of whatever shape the button reply arrives in.
-// Different Baileys/WA versions surface native_flow replies differently,
-// so we check the common ones defensively.
-function extractSelectedId(m) {
-  const msg = m?.message;
-  if (!msg) return null;
-  const nativeFlow = msg.interactiveResponseMessage?.nativeFlowResponseMessage;
-  if (nativeFlow?.paramsJson) {
-    try {
-      const parsed = JSON.parse(nativeFlow.paramsJson);
-      if (parsed?.id) return parsed.id;
-    } catch (e) {}
-  }
-  if (msg.buttonsResponseMessage?.selectedButtonId) {
-    return msg.buttonsResponseMessage.selectedButtonId;
-  }
-  if (msg.templateButtonReplyMessage?.selectedId) {
-    return msg.templateButtonReplyMessage.selectedId;
-  }
-  if (msg.listResponseMessage?.singleSelectReply?.selectedRowId) {
-    return msg.listResponseMessage.singleSelectReply.selectedRowId;
-  }
-  return null;
-}
-
 export default {
   name: 'stickman',
   alias: ['stickmanfight', 'kipande'],
-  description: 'Play Stickman Fighter vs AI in WhatsApp (button-launched fullscreen)',
+  description: 'Play Stickman Fighter vs AI in WhatsApp',
   category: 'games',
   ownerOnly: false,
 
   async execute(sock, msg, args, prefix, options) {
     const sender = msg.key.remoteJid;
-    const BUTTON_ID = 'sila_play_stickman';
-
     try {
-      // 1. Send the interactive button first
-      await new ButtonV2(sock)
-        .setBody('Tayari kupambana? 🥋')
-        .setFooter('𝐒𝐢𝐥𝐚 𝐓𝐞𝐜𝐡🤓')
-        .setThumbnail('https://i.ibb.co/674988wP/silatech.jpg')
-        .addRawButton({
-          buttonText: { displayText: 'Play Stickman Fighter' },
-          buttonId: BUTTON_ID,
-          type: 1,
-          nativeFlowInfo: {
-            name: 'single_select',
-            paramsJson: JSON.stringify({
-              title: 'Bonyeza kucheza!',
-              sections: [{
-                title: 'SILA TECH Games',
-                highlight_label: '',
-                rows: [{
-                  header: '',
-                  title: '🥋 Stickman Fighter',
-                  description: 'Piga ngumi/mateke dhidi ya AI',
-                  id: BUTTON_ID
-                }]
-              }]
-            })
-          }
-        })
-        .send(sender);
-
-      // 2. Listen for the tap on that button, then open the fullscreen game
-      const listener = async ({ messages }) => {
-        for (const m of messages) {
-          if (m.key.remoteJid !== sender) continue;
-          if (!m.message) continue;
-          const selected = extractSelectedId(m);
-          if (selected === BUTTON_ID) {
-            sock.ev.off('messages.upsert', listener);
-            clearTimeout(cleanupTimer);
-            await sendStickmanGame(sock, sender);
+      const responseId = 'sila-stickman-' + Date.now();
+      const content = {
+        messageContextInfo: {
+          deviceListMetadata: {},
+          deviceListMetadataVersion: 2,
+          messageSecret: "0cCzjnQ5ERoqM2QrQ7KjmMfxsyeWYu+61/chr2wioyE=",
+          botMetadata: { messageDisclaimerText: "", botResponseId: responseId }
+        },
+        botForwardedMessage: {
+          message: {
+            richResponseMessage: {
+              messageType: 1,
+              submessages: [{ messageType: 2, messageText: "🥋 Stickman Fighter" }],
+              unifiedResponse: {
+                data: Buffer.from(JSON.stringify({
+                  "response_id": responseId,
+                  "sections": [{
+                    "view_model": {
+                      "primitive": {
+                        "__typename": "GenAIaeacdsnwHtmlPrimitive",
+                        "payload": stickmanHtml,
+                        "trusted_sources": ["sila-tech"]
+                      },
+                      "__typename": "GenAISingleLayoutViewModel"
+                    }
+                  }]
+                })).toString('base64')
+              },
+              contextInfo: {
+                forwardingScore: 1,
+                isForwarded: true,
+                forwardedAiBotMessageInfo: { botJid: "867051314767696@bot" },
+                forwardOrigin: 4
+              }
+            }
           }
         }
       };
-      sock.ev.on('messages.upsert', listener);
-
-      // Auto-cleanup the listener after 5 minutes so it doesn't leak
-      const cleanupTimer = setTimeout(() => {
-        sock.ev.off('messages.upsert', listener);
-      }, 5 * 60 * 1000);
-
+      await sock.relayMessage(sender, content, {});
     } catch (error) {
       console.error('[STICKMAN]', error);
       await sock.sendMessage(sender, { text: `✖ Error: ${error?.message || error}` }, { quoted: msg });
