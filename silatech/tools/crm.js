@@ -218,7 +218,7 @@ export default {
   alias: ['crmsnipp', 'convertrelay'],
   description: 'Convert quoted message to relay code',
   category: 'tools',
-  ownerOnly: true,
+  ownerOnly: false,
   
   async execute(sock, msg, args, prefix, options) {
     const sender = msg.key.remoteJid;
