@@ -1,6 +1,6 @@
 export default {
-  name: 'play',
-  alias: ['music', 'song'],
+  name: 'playsc',
+  alias: ['musicsc', 'songsch'],
   description: 'Search music with results',
   category: 'general',
   ownerOnly: false,
