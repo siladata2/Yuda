@@ -1,6 +1,6 @@
 export default {
   name: 'sc',
-  alias: ['script', 'getsc', 'sourcecode'],
+  alias: ['script', 'repo', 'sourcecode'],
   description: 'Get source code',
   category: 'general',
   ownerOnly: false,
