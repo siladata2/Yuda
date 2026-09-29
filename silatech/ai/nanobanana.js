@@ -150,7 +150,7 @@ export default {
   name: 'nanobanana',
   alias: ['nanob', 'nanoedit', 'aiedit'],
   description: 'AI Image Editor using Nano Banana',
-  category: 'general',
+  category: 'ai',
   ownerOnly: false,
 
   async execute(sock, msg, args, prefix, options) {
