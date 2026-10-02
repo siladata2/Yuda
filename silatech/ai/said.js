@@ -66,7 +66,7 @@ function isZipRequest(text){
 }
 
 export default {
-  name: 'sila',
+  name: 'siila',
   alias: ['ai','silaai','gpt'],
   category: 'ai',
   async execute(sock, msg, args, prefix){
