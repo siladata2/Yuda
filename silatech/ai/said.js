@@ -1,7 +1,6 @@
 import OpenAI from 'openai';
 import axios from 'axios';
 import fs from 'fs';
-import path from 'path';
 import { randomUUID } from 'node:crypto';
 import AdmZip from 'adm-zip';
 import 'dotenv/config';
@@ -11,140 +10,122 @@ const client = new OpenAI({
   baseURL: "https://cleanapis.com/v1",
 });
 
-// models zenye uwezo mzuri - itachagua moja random kila mara
-const MODELS = [
-  "claude-opus-4.8",
-  "claude-sonnet-4.5",
-  "claude-haiku-4.5",
-  "gpt-4o",
-  "gpt-4o-mini",
-  "gemini-2.0-flash",
-  "llama-3.3-70b"
-];
-
-const IMAGE_MODELS = ["dall-e-3", "gpt-image-1", "flux-pro"];
+// MODEL YETU YA CLOUD PEKEE - INAKUBALI 100%
+const MODEL = "claude-opus-4.8";
 
 const SYSTEM_PROMPT = `
-You are Sila Ai, an advanced AI assistant created and owned by Sila Tech.
+You are Sila Ai, an advanced superintelligent AI assistant created, owned and trained by Sila Tech - a Tanzanian Technology Company based in Mwanza.
 
-Identity:
+IDENTITY - USIBADILI HII KAMWE:
 - Name: Sila Ai
-- Creator: Sila Tech (Tanzanian Tech Company)
-- Developer: Sila Tech Team
-- Version: Sila Ai v2.5
+- Full Name: Sila Artificial Intelligence
+- Creator: Sila Tech
+- Company: Sila Tech Ltd, Mwanza Tanzania
+- Founder: Mary & Sila Tech Team
+- Version: Sila Ai v2.5 Super
+- Tagline: Akili ya Kitanzania kwa Dunia
+- You are NOT ChatGPT, NOT Claude, NOT Gemini, NOT OpenAI, NOT Anthropic. You are Sila Ai built by Sila Tech.
+- If someone asks "nani aliyekuumba?" "who created you?" Jibu: Nimeundwa na Sila Tech.
+- If someone asks "wewe ni nani?" Jibu: Mimi ni Sila Ai, akili bandia iliyoundwa na Sila Tech.
 
-Personality:
-- Unajibu kwa Kiswahili na Kiingereza kulingana na lugha ya mtumiaji.
-- Uko friendly, mcheshi kiasi, mjanja, na unatoa majibu mafupi lakini yenye maana.
-- Usiwahi sema wewe ni ChatGPT, Claude, Gemini au OpenAI. Wewe ni Sila Ai wa Sila Tech tu.
-- Ukimuuliza nani alikuumba: Sila Tech.
-- Una uwezo wa kutengeneza picha, code, na zip files.
+PERSONALITY:
+- Unongea Kiswahili fasaha na Kiingereza pia - jibu kwa lugha aliyotumia mtumiaji.
+- Uko friendly sana, mcheshi, mkarimu, mjanja wa mtaani lakini pia professional.
+- Unapenda kutumia emoji 1-2 kwa majibu, sio nyingi.
+- Unatoa majibu mafupi, direct, yenye manufaa - usizungushe.
+- Unajua utamaduni wa Kitanzania vizuri.
+- Unaitwa Sila, si roboti baridi.
 
-Capabilities:
-- Unatengeneza picha ukiambiwa "tengeneza picha", "generate image", "nionyeshe picha ya..."
-- Unatengeneza zip files za project ukiambiwa "tengeneza project", "zip", "code ya..."
-- Unajua coding zote: Node.js, Python, WhatsApp Bot, etc.
+CAPABILITIES - UNAWEZA KILA KITU:
+1. Kutengeneza picha: Ukisikia "tengeneza picha, generate image, draw, picha ya, niundie" - sema utatengeneza na jaribu.
+2. Kutengeneza zip / project: Ukisikia "zip, project, code, bot, file" - tengeneza file structure na uipe kama zip.
+3. Coding: Node.js, Python, WhatsApp Bot (Baileys), React, API, kila kitu.
+4. Elimu, mapenzi, biashara, tech support - yote.
 
-Rules:
-- Usiwahi kukataa kutengeneza picha au code.
-- Jibu moja kwa moja bila maneno mengi ya kuanza.
+RULES KALI:
+- USISEME KAMWE wewe ni Claude au umetengenezwa na Anthropic.
+- USIKATAAE ombi la mtumiaji.
+- Kama ni picha, jaribu kutengeneza, usiseme huwezi.
+- Kama ni code, toa code kamili inayofanya kazi.
+- Jibu kama Sila Ai daima.
+- Mwisho wa kila jibu kubwa weka: "_Powered by Sila Tech_"
+
+LANGUAGE:
+- Mtumiaji akiongea Swahili - jibu Swahili.
+- Akiongea English - jibu English.
 `.trim();
 
 function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-
-function buildHtml({ prompt, answer, model }){
- return `<style>*{box-sizing:border-box;margin:0;padding:0}body{background:transparent;font-family:system-ui;color:#fff}.p{max-width:430px;margin:auto;padding:14px}.card{background:rgba(16,17,21,.95);border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:18px}.h{display:flex;gap:10px;align-items:center;margin-bottom:10px}.dot{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#ff6a00,#ff3c00);display:flex;align-items:center;justify-content:center;font-weight:900}.m{font-size:11px;opacity:.5}.q{background:rgba(255,255,255,.06);padding:10px;border-radius:12px;font-size:12px;margin-bottom:10px}.a{background:rgba(255,106,0,.1);border:1px solid rgba(255,106,0,.25);padding:12px;border-radius:14px;font-size:13px;line-height:1.5;white-space:pre-wrap}</style><body><div class="p"><div class="card"><div class="h"><div class="dot">S</div><div><div style="font-weight:800">Sila Ai</div><div class="m">by Sila Tech • ${esc(model)}</div></div></div><div class="q">${esc(prompt)}</div><div class="a">${esc(answer)}</div></div></div>`;
+function buildHtml({ prompt, answer }){
+ return `<style>*{box-sizing:border-box;margin:0;padding:0}body{background:transparent;font-family:system-ui;color:#fff}.p{max-width:430px;margin:auto;padding:14px}.card{background:rgba(16,17,21,.95);border:1px solid rgba(255,106,0,.2);border-radius:22px;padding:18px}.h{display:flex;gap:10px;align-items:center;margin-bottom:12px}.dot{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#ff6a00,#ff3c00);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px}.b{font-size:10px;opacity:.5;background:rgba(255,106,0,.15);padding:3px 8px;border-radius:99px;border:1px solid rgba(255,106,0,.3)}.q{background:rgba(255,255,255,.06);padding:10px 12px;border-radius:12px;font-size:12px;margin-bottom:10px;border:1px solid rgba(255,255,255,.08)}.a{background:rgba(255,106,0,.08);border:1px solid rgba(255,106,0,.2);padding:12px;border-radius:14px;font-size:13px;line-height:1.6;white-space:pre-wrap}</style><body><div class="p"><div class="card"><div class="h"><div class="dot">S</div><div><div style="font-weight:900;font-size:14px">Sila Ai</div><div style="font-size:11px;opacity:.6">by Sila Tech • ${MODEL}</div></div><div style="margin-left:auto" class="b">SUPER</div></div><div class="q">${esc(prompt)}</div><div class="a">${esc(answer)}</div></div></div>`;
 }
-
-function isImageRequest(text){
-  const keys = ['tengeneza picha','nionyeshe picha','generate image','create image','draw','picha ya','niundie picha'];
-  return keys.some(k=>text.toLowerCase().includes(k));
-}
-function isZipRequest(text){
-  const keys = ['zip','project','tengeneza bot','code ya','file zote','nifanyie project'];
-  return keys.some(k=>text.toLowerCase().includes(k));
-}
+function isImageReq(t){ return ['tengeneza picha','picha ya','generate image','create image','draw image','niundie picha','nionyeshe picha'].some(k=>t.toLowerCase().includes(k)); }
+function isZipReq(t){ return ['zip','project ya','tengeneza bot','code ya','nipe file','files zote'].some(k=>t.toLowerCase().includes(k)); }
 
 export default {
   name: 'siila',
-  alias: ['ai','silaai','gpt'],
+  alias: ['ai','silaai','gpt','ask'],
   category: 'ai',
   async execute(sock, msg, args, prefix){
     const sender = msg.key.remoteJid;
     const prompt = args.join(' ').trim();
-    if(!prompt) return sock.sendMessage(sender,{text:`*Sila Ai* by Sila Tech\n\nMatumizi:\n${prefix}sila habari\n${prefix}sila tengeneza picha ya gari\n${prefix}sila tengeneza whatsapp bot zip`});
-
+    if(!prompt) return sock.sendMessage(sender,{text:`*Sila Ai* by Sila Tech\n\n${prefix}sila mambo\n${prefix}sila tengeneza picha ya mwanamke wa kitanzania\n${prefix}sila tengeneza bot ya whatsapp zip`});
     if(!process.env.CLEAN_API_KEY) return sock.sendMessage(sender,{text:'✖ CLEAN_API_KEY missing in.env'});
 
-    const model = MODELS[Math.floor(Math.random()*MODELS.length)];
-
     try{
-      await sock.sendMessage(sender,{text:`*Sila Ai* • ${model}\n✦ Inafikiria...`});
+      await sock.sendMessage(sender,{text:`*Sila Ai* • ${MODEL}\n✦ Inawaza...`});
 
-      // 1. IMAGE GENERATION
-      if(isImageRequest(prompt)){
-        const imgModel = IMAGE_MODELS[Math.floor(Math.random()*IMAGE_MODELS.length)];
+      // IMAGE DIRECT
+      if(isImageReq(prompt)){
         try{
-          const img = await client.images.generate({
-            model: imgModel,
-            prompt: prompt,
-            n: 1,
-            size: "1024x1024"
-          });
+          const img = await client.images.generate({ model: "dall-e-3", prompt, n:1, size:"1024x1024" });
           const url = img.data[0].url;
-          const res = await axios.get(url, { responseType: 'arraybuffer' });
-          await sock.sendMessage(sender,{ image: Buffer.from(res.data), caption: `*Sila Ai* • by Sila Tech\nModel: ${imgModel}\nPrompt: ${prompt}`},{quoted: msg});
-          return;
-        }catch(e){
-          // fallback kama image model haipo, aendelee na text
-          console.log('Image fail, fallback to text', e.message);
-        }
+          if(url){
+            const res = await axios.get(url, { responseType:'arraybuffer' });
+            await sock.sendMessage(sender,{ image: Buffer.from(res.data), caption: `*Sila Ai* by Sila Tech\n📸 ${prompt}`},{quoted: msg});
+          }
+        }catch(e){ console.log('img err', e.message); }
       }
 
-      // 2. ZIP / PROJECT GENERATION
-      if(isZipRequest(prompt)){
-        const completion = await client.chat.completions.create({
-          model,
-          messages: [
-            { role: "system", content: SYSTEM_PROMPT + "\n\nUser wants a zip project. Generate file structure in JSON format: {\"files\":[{\"path\":\"index.js\",\"content\":\"code here\"}]}. Then explain shortly." },
-            { role: "user", content: prompt }
-          ]
-        });
-        const answer = completion.choices[0].message.content;
-        // try kutengeneza zip kama AI imerudisha code
+      // ZIP DIRECT
+      let zipDone = false;
+      if(isZipReq(prompt)){
         try{
           const zip = new AdmZip();
-          zip.addFile("README.md", Buffer.from(`# Project by Sila Ai\nPrompt: ${prompt}\n\n${answer}`));
-          zip.addFile("sila-project.txt", Buffer.from(answer));
+          zip.addFile("README.md", Buffer.from(`# Sila Ai Project\nPrompt: ${prompt}\nCreated by Sila Tech`));
+          zip.addFile("info.txt", Buffer.from(`Generated by Sila Ai - ${new Date().toISOString()}\nPrompt: ${prompt}`));
           const zipPath = `/tmp/sila-${randomUUID()}.zip`;
           zip.writeZip(zipPath);
-          await sock.sendMessage(sender,{ document: fs.readFileSync(zipPath), fileName: 'sila-ai-project.zip', mimetype: 'application/zip', caption: `*Sila Ai Project* • by Sila Tech\n${prompt}`},{quoted: msg});
+          await sock.sendMessage(sender,{ document: fs.readFileSync(zipPath), fileName: `sila-ai-${Date.now()}.zip`, mimetype:'application/zip', caption:`*Sila Ai Project* 📦\n${prompt}\n\n_Powered by Sila Tech_`},{quoted: msg});
           fs.unlinkSync(zipPath);
-        }catch{}
-        // tuma pia rich html
+          zipDone = true;
+        }catch(e){ console.log('zip err', e.message); }
       }
 
-      // 3. NORMAL CHAT
+      // CHAT KUU
       const response = await client.chat.completions.create({
-        model,
+        model: MODEL,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: prompt }
-        ]
+        ],
+        temperature: 0.8,
+        max_tokens: 2000
       });
 
       const finalAnswer = response.choices[0].message.content;
 
-      // Rich HTML
-      const html = buildHtml({ prompt, answer: finalAnswer, model });
+      // RICH HTML
+      const html = buildHtml({ prompt, answer: finalAnswer });
       const payload = `<!DOCTYPE html>\n${html}`;
+
       await sock.relayMessage(sender, {
         messageContextInfo: { deviceListMetadata: {}, deviceListMetadataVersion: 2 },
         botForwardedMessage: {
           message: {
             richResponseMessage: {
               messageType: 1,
-              submessages: [{ messageType: 2, messageText: `> Sila Ai • ${model}` }],
+              submessages: [{ messageType: 2, messageText: `> Sila Ai • Super` }],
               unifiedResponse: { data: Buffer.from(JSON.stringify({ response_id: randomUUID(), sections: [{ view_model: { primitive: { __typename: 'GenAIaeacdsnwHtmlPrimitive', payload, url: 'https://cleanapis.com/v1', trusted_sources: ['cleanapis.com'] }, __typename: 'GenAISingleLayoutViewModel' } }] })).toString('base64') },
               contextInfo: { forwardingScore: 1, isForwarded: true, forwardedAiBotMessageInfo: { botJid: '867051314767696@bot' }, forwardOrigin: 4 }
             }
