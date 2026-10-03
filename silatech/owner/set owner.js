@@ -2,7 +2,7 @@ import { config } from '../../config.js';
 
 export default {
   name: 'setowner',
-  alias: ['owner', 'ownernumber', 'setownernumber'],
+  alias: ['aowner', 'ownernumber', 'setownernumber'],
   description: 'Change owner phone number',
   category: 'owner',
   ownerOnly: true,
